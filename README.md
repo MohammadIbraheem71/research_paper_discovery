@@ -41,8 +41,6 @@ Dataset: [arXiv Papers Cleaned on Kaggle](https://www.kaggle.com/datasets/mohamm
 
 ### Sohaib 
 
-### Sohaib
-
 - **Exploratory data analysis (EDA):** `notebooks/02_eda.ipynb` loads the cleaned
   dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and `cs.CV`,
   2018 to 2024) and looks at it before modelling. It covers the basic structure,
