@@ -41,6 +41,45 @@ Dataset: [arXiv Papers Cleaned on Kaggle](https://www.kaggle.com/datasets/mohamm
 
 ### Sohaib 
 
+### Sohaib
+
+- **Exploratory data analysis (EDA):** `notebooks/02_eda.ipynb` loads the cleaned
+  dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and `cs.CV`,
+  2018 to 2024) and looks at it before modelling. It covers the basic structure,
+  missing values, duplicates, text length, class balance, category overlap,
+  vocabulary and feature correlations. Each plot is saved to `images/` and also
+  shows up under its code cell. Horizontal bars, integer bins and separate
+  panels keep labels and scales readable. Every section ends with a short
+  written insight, and the notebook closes with what the findings mean for
+  modelling.
+- **Text length analysis:** Histograms and boxplots of abstract and title word
+  counts (`abstract_length_histogram.png`, `title_length_histogram.png`,
+  `abstract_vs_title_boxplot.png`). The median abstract is about 168 words, with
+  the middle half running from roughly 140 to 200. The median title is about 9
+  words (7 to 11), so abstracts are around 18 times longer. Abstract length has
+  outliers at both ends, so a fixed truncation length is reasonable for
+  embedding models.
+- **Class balance and category overlap:** Each of the three classes has about
+  40,000 papers because of the per-category cap, so no imbalance handling is
+  needed. Cross-listing is common, though: 69,412 papers (about 58%) list more
+  than one category. The most frequent pairs are `cs.AI` + `cs.LG` (16,797),
+  `cs.LG` + `stat.ML` (14,293) and `cs.AI` + `cs.CL` (13,009), and `cs.LG`
+  appears in five of the top ten pairs. `primary_category` is a single label on
+  a partly ambiguous problem, so errors should be checked per class.
+- **Vocabulary analysis:** The top 20 unigrams and bigrams
+  (`frequent_unigrams.png`, `frequent_bigrams.png`) are counted on `text_lemma`,
+  so stop words and generic academic phrases do not crowd the charts and the
+  topical vocabulary shows through. Bigrams are counted within each paper.
+- **Feature correlations:** The correlation heatmap (`corr_heatmap.png`) covers
+  abstract length, title length, number of categories and year. All
+  correlations are weak (|r| up to about 0.12), so these features can be used
+  together without multicollinearity problems.
+- **Implications for modelling:** Report macro-F1 next to accuracy and check
+  per-class errors, especially `cs.LG` against `cs.CV` and `cs.CL`. Use
+  `text_lemma` with TF-IDF for bag-of-words methods and `text_raw` for
+  embeddings. Embedding models that read only about 256 tokens will truncate
+  long abstracts.
+
 ### Aliyan
 
 - **Problem statement:** Build a reproducible pipeline that prepares arXiv papers for
