@@ -2,6 +2,8 @@
 
 Research paper discovery project for a data science elective at FAST NUCES.
 
+**Repository:** [github.com/MohammadIbraheem71/research_paper_discovery](https://github.com/MohammadIbraheem71/research_paper_discovery)
+
 ## Dataset
 
 **Source.** The raw data is the
@@ -25,8 +27,9 @@ It can be downloaded without a Kaggle login and contains:
 submission date from 2018 to 2024 inclusive. The sample is capped at 40,000
 papers per category, so it is balanced by design rather than a natural arXiv
 sample. The pre-cap counts can be reproduced with
-`src/uncapped_counts.py`; they explain why the sample was balanced and are
-reported alongside the EDA class-balance section.
+`src/uncapped_counts.py` and `notebooks/04_uncapped_counts.ipynb`; they explain
+why the sample was balanced and are reported alongside the EDA class-balance
+section.
 
 **Features.**
 
@@ -84,6 +87,30 @@ Other cleaning decisions:
 - **Validation:** no nulls, unique ids, sorted ids, expected categories, years
   2018–2024 and a valid `quarter` format are all checked before saving.
 
+### Uncapped category counts
+
+`papers_raw.parquet` is already capped at 40,000 papers per category, so it
+cannot show the real arXiv class imbalance. `src/uncapped_counts.py` applies
+the same category and year filter as step A1 to the **original Cornell
+snapshot** without the cap, and `notebooks/04_uncapped_counts.ipynb` imports and
+runs it.
+
+Run the notebook on Kaggle with the
+[`Cornell-University/arxiv`](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+dataset attached. Do not use `papers.parquet` or `papers_raw.parquet` as the
+input — they are already cleaned or capped. The notebook writes four files to
+`/kaggle/working`:
+
+| File | Contents |
+|---|---|
+| `uncapped_counts.csv` | Papers per category, share, papers after the 40k cap and papers removed by it |
+| `uncapped_counts_by_year.csv` | Papers per category and year |
+| `uncapped_counts_pivot.csv` | Year × category pivot with a yearly `total` |
+| `uncapped_totals_by_year.csv` | Total kept papers per year |
+
+These counts explain why the sample is balanced and feed Person B's EDA
+class-balance section.
+
 ## Team contributions
 
 ### Ibraheem
@@ -111,6 +138,12 @@ Other cleaning decisions:
   summary, before/after examples, the two text versions, validation checks and
   saving. It produces `images/01_issues_summary.png` and
   `images/01_length_outliers.png`.
+- **Uncapped category counts (A1b):** `src/uncapped_counts.py` streams the
+  original arXiv snapshot and repeats the A1 category/year filter without the
+  40,000-per-category cap, producing papers per category and per year before
+  balancing. `notebooks/04_uncapped_counts.ipynb` imports and calls those
+  functions, shows the uncapped-versus-capped table and the year × category
+  pivot, and saves four CSVs for the EDA class-balance section.
 - **Topic modeling (A3):** `src/topics.py` builds a Gensim dictionary and
   bag-of-words corpus, tunes the number of LDA topics with `c_v` coherence
   (`tune`), trains the final multi-core LDA model, exports the top words per
@@ -189,7 +222,7 @@ Other cleaning decisions:
 ```text
 data/          # local parquet inputs; ignored by git
 images/        # plots used in the EDA notebook
-notebooks/     # cleaning, EDA, and preprocessing notebooks
+notebooks/     # cleaning, EDA, preprocessing and uncapped-count notebooks
 results/       # generated matrices and split metadata; ignored by git
 src/           # reusable project modules
 ```
