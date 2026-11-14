@@ -2,8 +2,87 @@
 
 Research paper discovery project for a data science elective at FAST NUCES.
 
-Dataset: [arXiv Papers Cleaned on Kaggle](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned/data)
-(the dataset also contains the raw data).
+## Dataset
+
+**Source.** The raw data is the
+[arXiv Dataset](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+published by Cornell University on Kaggle. It is a JSON-lines file with one
+paper per line (`id`, `title`, `abstract`, `categories`, version dates, and
+more). The project streams it line by line instead of loading the whole
+snapshot into memory.
+
+**Processed data.** The Phase 1 files are published as a public Kaggle
+Dataset: [arXiv Papers Cleaned](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned).
+It can be downloaded without a Kaggle login and contains:
+
+| File | Rows | Contents |
+|---|---:|---|
+| `papers_raw.parquet` | 120,000 | Output of step A1, before cleaning |
+| `papers.parquet` | 119,919 | Final cleaned dataset used by every notebook |
+| `papers_sample.parquet` | 10,000 | Reproducible random sample (seed 42) for quick tests |
+
+**Scope.** Primary categories `cs.LG`, `cs.CL` and `cs.CV`; first-version
+submission date from 2018 to 2024 inclusive. The sample is capped at 40,000
+papers per category, so it is balanced by design rather than a natural arXiv
+sample. The pre-cap counts can be reproduced with
+`src/uncapped_counts.py`; they explain why the sample was balanced and are
+reported alongside the EDA class-balance section.
+
+**Features.**
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | string | arXiv identifier |
+| `title` | string | Paper title, lightly cleaned |
+| `abstract` | string | Abstract, lightly cleaned |
+| `text_raw` | string | Title + abstract with LaTeX/URLs removed; case and punctuation kept (embeddings, LLM, retrieval) |
+| `text_lemma` | string | Lowercased, stop-word-free, lemmatized text (TF-IDF, LDA) |
+| `primary_category` | string | Target label: `cs.LG`, `cs.CL` or `cs.CV` |
+| `categories` | string | All arXiv categories, space-separated |
+| `date` | datetime | First-version submission date |
+| `year` | int | Submission year (2018–2024) |
+| `month` | int | Submission month (1–12) |
+| `quarter` | string | Submission quarter, e.g. `2021Q3` |
+
+**Target variable.** `primary_category` is a three-class label. After cleaning
+the classes are `cs.CL` 39,980, `cs.CV` 39,973 and `cs.LG` 39,966. Because the
+40,000-per-category cap balances them, accuracy is meaningful but macro-F1 is
+still reported; the balance is a sampling choice and not the real arXiv
+distribution.
+
+## Cleaning summary
+
+Step A1 (`src/preprocessing.py`) filters the raw snapshot and step A2
+(`src/cleaning.py`, documented in `notebooks/01_data_cleaning.ipynb`) cleans
+the text and builds the final table.
+
+| Step | Rows | What happened |
+|---|---:|---|
+| Raw filtered data (A1) | 120,000 | Kept only `cs.LG`, `cs.CL`, `cs.CV`, first-version years 2018–2024, capped at 40,000 per category (seed 42) |
+| After missing / duplicates / withdrawn | 119,970 | Dropped 0 missing values, 0 duplicate ids, 29 near-identical titles and 1 withdrawn-paper notice |
+| After abstracts under 30 words | 119,919 | Dropped 51 too-short abstracts (52 were flagged; one had already been removed) |
+
+Other cleaning decisions:
+
+- **Inconsistent text formats:** LaTeX formulas and commands, URLs, stray
+  symbols, newlines and repeated spaces are removed; capitalisation and
+  punctuation are kept in `text_raw`.
+- **Two text versions:** `text_raw` is for sentence embeddings, the LLM and
+  retrieval; `text_lemma` (lowercased, stop words and generic academic words
+  removed, spaCy-lemmatized) is for TF-IDF and LDA.
+- **Dates and categories:** `date` is the first-version submission date;
+  `year`, `month` and `quarter` are derived from it. `primary_category` is the
+  first listed arXiv category.
+- **Outliers:** abstract/title lengths outside the IQR fences are documented
+  but **kept**. They are legitimate papers, and deleting rows would break the
+  row alignment with the shared sentence embeddings. The embedding model
+  truncates very long abstracts, which is acceptable because the key content
+  comes first.
+- **Row order:** the final table is sorted once by `id` and must never be
+  re-sorted, because the embeddings and all downstream results follow this
+  order.
+- **Validation:** no nulls, unique ids, sorted ids, expected categories, years
+  2018–2024 and a valid `quarter` format are all checked before saving.
 
 ## Team contributions
 
