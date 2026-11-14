@@ -149,48 +149,71 @@ and split metadata) are ignored by Git.
 - **Dataset:** published the cleaned arXiv dataset on Kaggle
   (`mohammadibraheem71/arxiv-papers-cleaned`) and linked it in the README.
 
-### Sohaib 
+### Sohaib
 
-- **Exploratory data analysis (EDA):** `notebooks/2_Notebook_EDA.ipynb` loads the cleaned
-  dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and `cs.CV`,
-  2018 to 2024) and looks at it before modelling. It covers the basic structure,
-  missing values, duplicates, text length, class balance, category overlap,
-  vocabulary and feature correlations. Each plot is saved to `images/` and also
-  shows up under its code cell. Horizontal bars, integer bins and separate
-  panels keep labels and scales readable. Every section ends with a short
-  written insight, and the notebook closes with what the findings mean for
-  modelling.
+- **Exploratory data analysis (EDA):** `notebooks/2_Notebook_EDA.ipynb` loads the
+  cleaned dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and
+  `cs.CV`, 2018 to 2024) and looks at it before modelling. It covers structure,
+  missing values, duplicates, text length, class balance before and after the
+  cap, yearly trends, category overlap, vocabulary, per-category length and
+  terms, and feature correlations. Each plot is saved to `images/` and also
+  shows under its code cell, and every section ends with a short written
+  insight. The notebook closes with what the findings mean for modelling. Input,
+  image and results paths have fallbacks, so it runs both on Kaggle and in a
+  local clone (`data/papers.parquet`, `results/`, `images/`).
+- **Class balance before the cap:** `results/uncapped_counts.csv` and
+  `results/uncapped_counts_pivot.csv` hold the counts from the original arXiv
+  snapshot, before the per-category cap. `cs.CV` has 96,756 papers (40.89%),
+  `cs.LG` 87,945 (37.17%) and `cs.CL` 51,918 (21.94%), 236,619 in total, so
+  `cs.CV` is about 1.86 times `cs.CL`. The 40k cap keeps 120,000 papers and
+  removes 116,619, and cleaning drops 81 more, which leaves 119,919. The cleaned
+  dataset is therefore balanced by design, not naturally, and conclusions from
+  the EDA and the models apply to this balanced sample, not to all of arXiv
+  (`images/2_uncapped_class_balance.png` for the original counts,
+  `images/2_class_balance.png` for the cleaned dataset).
+- **Yearly trends:** In the uncapped data volume grows from 14,971 papers in
+  2018 to 58,861 in 2024 (about 3.9 times), and `cs.CL` grows fastest (about 5
+  times) (`images/2_year_category_trend.png`). The cleaned sample keeps a similar
+  share of each year within a category (about 77% of `cs.CL`, 41% of `cs.CV` and
+  45% of `cs.LG`). It keeps each category's growth but changes the ranking
+  between categories: `cs.CL` looks largest in 2023 and 2024 in the sample, while
+  `cs.CV` is the largest in the uncapped data
+  (`images/2_time_trends_papers_per_year.png`). Claims about volume or category
+  mix over time should use the uncapped counts. Mean abstract length rises from
+  about 156 to 175 words over the period, and mean title length from 9.0 to 9.9
+  (`images/2_time_trends_length_by_year.png`).
 - **Text length analysis:** Histograms and boxplots of abstract and title word
-  counts (`2_abstract_length_histogram.png`, `2_title_length_histogram.png`,
-  `2_abstract_vs_title_boxplot.png`). The median abstract is about 168 words, with
-  the middle half running from roughly 140 to 200. The median title is about 9
-  words (7 to 11), so abstracts are around 18 times longer. Abstract length has
-  outliers at both ends, so a fixed truncation length is reasonable for
+  counts. The median abstract has about 168 words (middle half roughly 140 to
+  200) and the median title about 9 words (7 to 11), so abstracts are around 18
+  times longer. Length differs little by category: median abstracts have 156
+  words for `cs.CL`, 170 for `cs.LG` and 177 for `cs.CV`, and titles have a
+  median of 9 in all three (`images/2_per_category_lengths.png`). Abstract
+  outliers exist on both sides, so fixed-length truncation is reasonable for
   embedding models.
-- **Class balance and category overlap:** Each of the three classes has about
-  40,000 papers because of the per-category cap, so no imbalance handling is
-  needed. Before the cap, however, the categories were uneven: `cs.CV` had
-  96,756 papers (40.89%), `cs.LG` 87,945 (37.17%) and `cs.CL` 51,918 (21.94%),
-  236,619 in total; the cap removed 116,619 papers, so the balance is a
-  sampling choice and not the real arXiv distribution. Cross-listing is common,
-  though: 69,412 papers (about 58%) list more than one category. The most
-  frequent pairs are `cs.AI` + `cs.LG` (16,797), `cs.LG` + `stat.ML` (14,293)
-  and `cs.AI` + `cs.CL` (13,009), and `cs.LG` appears in five of the top ten
-  pairs. `primary_category` is a single label on a partly ambiguous problem, so
-  errors should be checked per class.
-- **Vocabulary analysis:** The top 20 unigrams and bigrams
-  (`2_frequent_unigrams.png`, `2_frequent_bigrams.png`) are counted on `text_lemma`,
-  so stop words and generic academic phrases do not crowd the charts and the
-  topical vocabulary shows through. Bigrams are counted within each paper.
-- **Feature correlations:** The correlation heatmap (`2_corr_heatmap.png`) covers
-  abstract length, title length, number of categories and year. All
-  correlations are weak (|r| up to about 0.12), so these features can be used
-  together without multicollinearity problems.
+- **Category overlap:** 69,412 papers (about 58%) are cross-listed in more than
+  one category. The most common pairs are `cs.AI` + `cs.LG` (16,797), `cs.LG` +
+  `stat.ML` (14,293) and `cs.AI` + `cs.CL` (13,009), and `cs.LG` appears in five
+  of the top ten pairs. `primary_category` is a single label on a partly
+  ambiguous problem, so errors should be checked per class.
+- **Vocabulary analysis:** Top unigrams and bigrams are counted on `text_lemma`,
+  so stop words and generic academic phrases do not dominate. The most frequent
+  words (model, base and datum) appear in all three categories and say little
+  about the field. Category-specific terms are much more distinctive, usually
+  with 85% to 99% of their use in one category: NLP terms for `cs.CL` (dialogue,
+  multilingual, machine translation), visual terms for `cs.CV` (lidar, instance
+  segmentation, depth estimation) and learning-theory and reinforcement
+  learning terms for `cs.LG` (regret, bandit, federated learning, policy
+  gradient) (`images/2_per_category_distinctive_unigrams.png`,
+  `images/2_per_category_distinctive_bigrams.png`).
+- **Feature correlations:** The heatmap of abstract length, title length, number
+  of categories and year shows only weak relationships (|r| up to about 0.12), so
+  these features can be used together without multicollinearity concerns.
 - **Implications for modelling:** Report macro-F1 next to accuracy and check
   per-class errors, especially `cs.LG` against `cs.CV` and `cs.CL`. Use
   `text_lemma` with TF-IDF for bag-of-words methods and `text_raw` for
-  embeddings. Embedding models that read only about 256 tokens will truncate
-  long abstracts.
+  embeddings. Expect embedding models with a 256-token limit to truncate long
+  abstracts. Any statement about real arXiv class proportions or trends must come
+  from the uncapped counts.
 
 ### Aliyan
 
