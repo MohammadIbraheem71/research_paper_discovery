@@ -66,7 +66,12 @@ def count_uncapped(path: str) -> tuple[Counter, Counter, Counter, int, int]:
                 if not categories or categories[0] not in allowed:
                     continue
                 created = record["versions"][0]["created"]
-                year = int(created[:4])
+                # The Cornell snapshot stores RFC-2822 dates, e.g.
+                # "Fri, 01 May 2009 01:52:14 GMT"; pandas also accepts ISO dates.
+                created_dt = pd.to_datetime(created, errors="coerce", utc=True)
+                if pd.isna(created_dt):
+                    raise ValueError(f"unparseable created date: {created!r}")
+                year = int(created_dt.year)
             except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError):
                 skipped += 1
                 continue
@@ -79,6 +84,12 @@ def count_uncapped(path: str) -> tuple[Counter, Counter, Counter, int, int]:
             by_category_year[(category, year)] += 1
             by_year[year] += 1
             kept += 1
+
+    if kept == 0:
+        raise RuntimeError(
+            "No papers matched the category/year filter. Check that the input "
+            "is the raw arXiv snapshot and that its version dates are parseable."
+        )
 
     return by_category, by_category_year, by_year, scanned, skipped
 
