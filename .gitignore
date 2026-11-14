@@ -1,5 +1,13 @@
 data/*.parquet
 
+# Generated matrices and split metadata stay local; the uncapped counts are
+# small, reviewed CSVs that Person B's EDA notebook reads directly.
+results/*
 !results/.gitkeep
+!results/uncapped_counts.csv
+!results/uncapped_counts_by_year.csv
+!results/uncapped_counts_pivot.csv
+!results/uncapped_totals_by_year.csv
+
 __pycache__/
 .ipynb_checkpoints/

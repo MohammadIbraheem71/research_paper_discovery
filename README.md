@@ -39,7 +39,7 @@ section.
 | `title` | string | Paper title, lightly cleaned |
 | `abstract` | string | Abstract, lightly cleaned |
 | `text_raw` | string | Title + abstract with LaTeX/URLs removed; case and punctuation kept (embeddings, LLM, retrieval) |
-| `text_lemma` | string | Lowercased, stop-word-free, lemmatized text (TF-IDF, LDA) |
+| `text_lemma` | string | Lowercased, stop-word-free, lemmatized text (TF-IDF; LDA only if topic modeling is added later) |
 | `primary_category` | string | Target label: `cs.LG`, `cs.CL` or `cs.CV` |
 | `categories` | string | All arXiv categories, space-separated |
 | `date` | datetime | First-version submission date |
@@ -72,7 +72,7 @@ Other cleaning decisions:
   punctuation are kept in `text_raw`.
 - **Two text versions:** `text_raw` is for sentence embeddings, the LLM and
   retrieval; `text_lemma` (lowercased, stop words and generic academic words
-  removed, spaCy-lemmatized) is for TF-IDF and LDA.
+  removed, spaCy-lemmatized) is for TF-IDF.
 - **Dates and categories:** `date` is the first-version submission date;
   `year`, `month` and `quarter` are derived from it. `primary_category` is the
   first listed arXiv category.
@@ -109,7 +109,9 @@ input — they are already cleaned or capped. The notebook writes four files to
 | `uncapped_totals_by_year.csv` | Total kept papers per year |
 
 These counts explain why the sample is balanced and feed Person B's EDA
-class-balance section.
+class-balance section. The four CSVs are committed under `results/` so the EDA
+notebook can read them directly; other generated files in `results/` (matrices
+and split metadata) are ignored by Git.
 
 ## Team contributions
 
@@ -144,16 +146,12 @@ class-balance section.
   balancing. `notebooks/04_uncapped_counts.ipynb` imports and calls those
   functions, shows the uncapped-versus-capped table and the year × category
   pivot, and saves four CSVs for the EDA class-balance section.
-- **Topic modeling (A3):** `src/topics.py` builds a Gensim dictionary and
-  bag-of-words corpus, tunes the number of LDA topics with `c_v` coherence
-  (`tune`), trains the final multi-core LDA model, exports the top words per
-  topic, and assigns a dominant topic and probability to every paper (`final`).
 - **Dataset:** published the cleaned arXiv dataset on Kaggle
   (`mohammadibraheem71/arxiv-papers-cleaned`) and linked it in the README.
 
 ### Sohaib 
 
-- **Exploratory data analysis (EDA):** `notebooks/02_eda.ipynb` loads the cleaned
+- **Exploratory data analysis (EDA):** `notebooks/2_Notebook_EDA.ipynb` loads the cleaned
   dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and `cs.CV`,
   2018 to 2024) and looks at it before modelling. It covers the basic structure,
   missing values, duplicates, text length, class balance, category overlap,
@@ -163,24 +161,28 @@ class-balance section.
   written insight, and the notebook closes with what the findings mean for
   modelling.
 - **Text length analysis:** Histograms and boxplots of abstract and title word
-  counts (`abstract_length_histogram.png`, `title_length_histogram.png`,
-  `abstract_vs_title_boxplot.png`). The median abstract is about 168 words, with
+  counts (`2_abstract_length_histogram.png`, `2_title_length_histogram.png`,
+  `2_abstract_vs_title_boxplot.png`). The median abstract is about 168 words, with
   the middle half running from roughly 140 to 200. The median title is about 9
   words (7 to 11), so abstracts are around 18 times longer. Abstract length has
   outliers at both ends, so a fixed truncation length is reasonable for
   embedding models.
 - **Class balance and category overlap:** Each of the three classes has about
   40,000 papers because of the per-category cap, so no imbalance handling is
-  needed. Cross-listing is common, though: 69,412 papers (about 58%) list more
-  than one category. The most frequent pairs are `cs.AI` + `cs.LG` (16,797),
-  `cs.LG` + `stat.ML` (14,293) and `cs.AI` + `cs.CL` (13,009), and `cs.LG`
-  appears in five of the top ten pairs. `primary_category` is a single label on
-  a partly ambiguous problem, so errors should be checked per class.
+  needed. Before the cap, however, the categories were uneven: `cs.CV` had
+  96,756 papers (40.89%), `cs.LG` 87,945 (37.17%) and `cs.CL` 51,918 (21.94%),
+  236,619 in total; the cap removed 116,619 papers, so the balance is a
+  sampling choice and not the real arXiv distribution. Cross-listing is common,
+  though: 69,412 papers (about 58%) list more than one category. The most
+  frequent pairs are `cs.AI` + `cs.LG` (16,797), `cs.LG` + `stat.ML` (14,293)
+  and `cs.AI` + `cs.CL` (13,009), and `cs.LG` appears in five of the top ten
+  pairs. `primary_category` is a single label on a partly ambiguous problem, so
+  errors should be checked per class.
 - **Vocabulary analysis:** The top 20 unigrams and bigrams
-  (`frequent_unigrams.png`, `frequent_bigrams.png`) are counted on `text_lemma`,
+  (`2_frequent_unigrams.png`, `2_frequent_bigrams.png`) are counted on `text_lemma`,
   so stop words and generic academic phrases do not crowd the charts and the
   topical vocabulary shows through. Bigrams are counted within each paper.
-- **Feature correlations:** The correlation heatmap (`corr_heatmap.png`) covers
+- **Feature correlations:** The correlation heatmap (`2_corr_heatmap.png`) covers
   abstract length, title length, number of categories and year. All
   correlations are weak (|r| up to about 0.12), so these features can be used
   together without multicollinearity problems.
@@ -212,18 +214,31 @@ class-balance section.
   are defined in `src/config.py`. Generated matrices and split metadata belong in
   `results/`, local parquet inputs belong in `data/`, reusable code belongs in `src/`,
   and notebooks document each stage of the workflow.
-- **How to run the notebooks:** Install the packages in `requirements.txt`, place
-  `papers.parquet` at `data/papers.parquet` (or update the input path in the
-  preprocessing notebook), and run notebooks 01 through 03 in order. The
-  preprocessing notebook writes its matrices and split metadata to `results/`.
+- **How to run the notebooks:** Install the packages with
+  `pip install -r requirements.txt` and download the spaCy model used by the
+  cleaning pipeline with `python -m spacy download en_core_web_sm` (the
+  cleaning notebook also attempts this automatically). Download `papers.parquet`
+  from the Kaggle dataset and place it at `data/papers.parquet`. Run notebooks
+  `01` → `02` → `03` in order; the preprocessing notebook writes its matrices
+  and split metadata to `results/`. Notebook `04_uncapped_counts.ipynb` is
+  separate: run it on Kaggle with the Cornell snapshot attached, as described
+  under [Uncapped category counts](#uncapped-category-counts).
+
+## Future work
+
+- **Topic modeling (A3):** `src/topics.py` is an experimental, code-only scaffold
+  (Gensim dictionary and bag-of-words corpus, LDA coherence tuning, top-word
+  export and dominant-topic assignment). It is **not part of Phase 1**: no
+  topic-model notebook or result files are delivered, and topic modeling is not
+  evaluated in this phase.
 
 ## Repository structure
 
 ```text
 data/          # local parquet inputs; ignored by git
-images/        # plots used in the EDA notebook
+images/        # plots used in the cleaning and EDA notebooks
 notebooks/     # cleaning, EDA, preprocessing and uncapped-count notebooks
-results/       # generated matrices and split metadata; ignored by git
+results/       # generated matrices/split metadata (ignored) + tracked uncapped CSVs
 src/           # reusable project modules
 ```
 

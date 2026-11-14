@@ -3,4 +3,9 @@ pyarrow
 scikit-learn
 scipy
 sentence-transformers
+matplotlib
+seaborn
+nltk
+spacy
+gensim
 jupyter
