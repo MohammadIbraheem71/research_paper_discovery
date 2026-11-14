@@ -8,6 +8,8 @@ results/*
 !results/uncapped_counts_by_year.csv
 !results/uncapped_counts_pivot.csv
 !results/uncapped_totals_by_year.csv
+!results/split_metadata.json
+!results/feature_manifest.json
 
 __pycache__/
 .ipynb_checkpoints/

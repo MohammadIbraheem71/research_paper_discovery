@@ -1,0 +1,28 @@
+{
+  "seed": 42,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "embedding_sample_size": 10000,
+  "embedding_train_rows": 8000,
+  "embedding_test_rows": 2000,
+  "embedding_files": {
+    "train": "embeddings_train.npy",
+    "test": "embeddings_test.npy",
+    "train_ids": "embedding_ids_train.parquet",
+    "test_ids": "embedding_ids_test.parquet"
+  },
+  "tfidf_ngram_range": [
+    1,
+    2
+  ],
+  "tfidf_norm": "l2",
+  "numeric_columns": [
+    "year",
+    "month",
+    "title_words",
+    "abstract_words"
+  ],
+  "train_rows": 95935,
+  "test_rows": 23984,
+  "tfidf_features": 919475,
+  "embedding_dimension": 384
+}

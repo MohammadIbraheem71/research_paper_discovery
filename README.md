@@ -229,9 +229,10 @@ and split metadata) are ignored by Git.
   statistics.
 - **Feature preparation:** The notebook compares TF-IDF features, sentence-transformer
   embeddings (`all-MiniLM-L6-v2`), and scaled numeric features derived from paper
-  metadata. Embeddings are generated for a reproducible 10,000-paper stratified
-  subset to keep CPU execution practical, while TF-IDF and numeric features use the
-  complete split.
+  metadata. TF-IDF uses `text_lemma`, while embeddings use `text_raw`. Embeddings
+  are generated separately for train and test for a reproducible 10,000-paper
+  stratified subset to keep CPU execution practical, while TF-IDF and numeric
+  features use the complete split.
 - **Reproducibility and repository structure:** Shared settings such as categories,
   date range, embedding model, embedding dimension, sample size, and random seed
   are defined in `src/config.py`. Generated matrices and split metadata belong in
@@ -240,10 +241,11 @@ and split metadata) are ignored by Git.
 - **How to run the notebooks:** Install the packages with
   `pip install -r requirements.txt` and download the spaCy model used by the
   cleaning pipeline with `python -m spacy download en_core_web_sm` (the
-  cleaning notebook also attempts this automatically). Download `papers.parquet`
-  from the Kaggle dataset and place it at `data/papers.parquet`. Run notebooks
-  `01` → `02` → `03` in order; the preprocessing notebook writes its matrices
-  and split metadata to `results/`. Notebook `04_uncapped_counts.ipynb` is
+  cleaning notebook also attempts this automatically). Notebook `03` checks
+  `RESEARCH_PAPERS_PATH`, then `/kaggle/input/arxiv-papers-cleaned/papers.parquet`,
+  then `data/papers.parquet` for the cleaned input. Run notebooks `01` → `02` → `03`
+  in order; the preprocessing notebook writes split-specific matrices and small
+  metadata manifests to `results/`. Notebook `04_uncapped_counts.ipynb` is
   separate: run it on Kaggle with the Cornell snapshot attached, as described
   under [Uncapped category counts](#uncapped-category-counts).
 
