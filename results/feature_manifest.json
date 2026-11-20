@@ -15,6 +15,12 @@
     2
   ],
   "tfidf_norm": "l2",
+  "label_classes_file": "label_classes.json",
+  "label_classes": [
+    "cs.CL",
+    "cs.CV",
+    "cs.LG"
+  ],
   "numeric_columns": [
     "year",
     "month",

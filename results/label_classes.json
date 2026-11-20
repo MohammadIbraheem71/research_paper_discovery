@@ -1,0 +1,12 @@
+{
+  "classes_": [
+    "cs.CL",
+    "cs.CV",
+    "cs.LG"
+  ],
+  "counts": {
+    "cs.CL": 39980,
+    "cs.CV": 39973,
+    "cs.LG": 39966
+  }
+}
