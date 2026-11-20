@@ -7,6 +7,7 @@ data/*
 # Environments and secrets
 .env
 *.env
+!.env.example
 .venv/
 
 # Generated results: ignore everything, then re-include only small reviewed files
