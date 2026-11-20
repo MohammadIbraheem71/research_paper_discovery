@@ -340,16 +340,14 @@ flowchart TD
     S([START]) --> R[router_node]
     R -->|literature| Q[query_rewrite_node]
     R -->|trend| T[trend_lookup_node]
-    R -->|hybrid| F[fanout]
+    R -->|hybrid| Q
     R -->|fallback| FB[fallback_node]
-    F --> Q
-    F --> T
     Q --> RET[retrieve_node]
     RET --> G{grade_docs_node}
     G -->|no and retry_count < MAX_RETRIES| Q
     G -->|yes / retries exhausted| A[generate_answer_node]
-    G -->|hybrid: retries exhausted| SYN[synthesize_node]
-    T --> SYN
+    G -->|hybrid: retries exhausted| T
+    T --> SYN[synthesize_node]
     A --> E([END])
     SYN --> E
     FB --> E

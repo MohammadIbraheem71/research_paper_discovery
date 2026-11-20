@@ -6,6 +6,7 @@ run offline; the node bodies are stubs owned by their respective teammates.
 from __future__ import annotations
 
 import logging
+import sqlite3
 from typing import Any, Optional
 
 from langgraph.checkpoint.sqlite import SqliteSaver
@@ -29,13 +30,8 @@ def _grade_edge(state: GraphState) -> str:
     if state.get("grade") == "no" and state.get("retry_count", 0) < MAX_RETRIES:
         return "rewrite"
     if state.get("route") == "hybrid":
-        return "synthesize"
+        return "trend_lookup"
     return "answer"
-
-
-def _fanout(state: GraphState) -> GraphState:
-    """No-op node used only to start both hybrid branches."""
-    return GraphState()
 
 
 def get_checkpointer() -> Any:
@@ -54,7 +50,10 @@ def get_checkpointer() -> Any:
     # TODO(Ibraheem): switch to a production checkpointer if the team needs one;
     # keep the database file under cache/ so it is never committed.
     CHECKPOINT_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    return SqliteSaver.from_conn_string(str(CHECKPOINT_DB_PATH))
+    # from_conn_string() is a context manager in this version; construct directly
+    # so callers receive a BaseCheckpointSaver instance that LangGraph accepts.
+    conn = sqlite3.connect(str(CHECKPOINT_DB_PATH), check_same_thread=False)
+    return SqliteSaver(conn)
 
 
 def build_graph(checkpointer: Optional[Any] = None) -> Any:
@@ -75,7 +74,6 @@ def build_graph(checkpointer: Optional[Any] = None) -> Any:
     builder = StateGraph(GraphState)
     for name, fn in (
         ("router", nodes.router_node),
-        ("fanout", _fanout),
         ("rewrite", nodes.query_rewrite_node),
         ("retrieve", nodes.retrieve_node),
         ("grade", nodes.grade_docs_node),
@@ -93,18 +91,16 @@ def build_graph(checkpointer: Optional[Any] = None) -> Any:
         {
             "literature": "rewrite",
             "trend": "trend_lookup",
-            "hybrid": "fanout",
+            "hybrid": "rewrite",
             "fallback": "fallback",
         },
     )
-    builder.add_edge("fanout", "rewrite")
-    builder.add_edge("fanout", "trend_lookup")
     builder.add_edge("rewrite", "retrieve")
     builder.add_edge("retrieve", "grade")
     builder.add_conditional_edges(
         "grade",
         _grade_edge,
-        {"rewrite": "rewrite", "answer": "answer", "synthesize": "synthesize"},
+        {"rewrite": "rewrite", "answer": "answer", "trend_lookup": "trend_lookup"},
     )
     builder.add_edge("trend_lookup", "synthesize")
     builder.add_edge("answer", END)

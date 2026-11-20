@@ -230,7 +230,8 @@ def trend_lookup_node(state: GraphState) -> GraphState:
     # TODO(Ibraheem): call compute_topic_share on real data/doc_topics.parquet once
     # it exists; the stub uses the tracked dummy share table.
     share_df = trends.compute_topic_share(pd.DataFrame())
+    # Do not write llm_calls here: on the hybrid path this node runs in parallel
+    # with query_rewrite_node, which owns that key in the same superstep.
     return GraphState(
         trend_data=trends.trend_lookup(state.get("question") or "", share_df),
-        llm_calls=state.get("llm_calls", 0),
     )

@@ -75,7 +75,7 @@ def test_ranking_metrics_on_a_tiny_hand_made_example() -> None:
     results = [["a", "b", "c"], ["x", "a", "y"]]
     gold = [["a"], ["a"]]
     assert evaluate.hit_rate_at_k(results, gold, k=1) == 0.5
-    assert evaluate.hit_rate_at_k(results, gold, k=2) == 0.5
+    assert evaluate.hit_rate_at_k(results, gold, k=2) == 1.0
     assert evaluate.mrr(results, gold) == 0.75
 
 
