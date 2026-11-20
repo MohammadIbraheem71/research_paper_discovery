@@ -4,6 +4,12 @@ Research paper discovery project for a data science elective at FAST NUCES.
 
 **Repository:** [github.com/MohammadIbraheem71/research_paper_discovery](https://github.com/MohammadIbraheem71/research_paper_discovery)
 
+## Problem statement
+
+Build a reproducible pipeline that prepares arXiv papers for category classification and
+research-paper discovery. The pipeline preserves the agreed dataset contract, prevents
+train/test leakage, and produces comparable text and numeric feature representations.
+
 ## Dataset
 
 **Source.** The raw data is the
@@ -22,6 +28,8 @@ It can be downloaded without a Kaggle login and contains:
 | `papers_raw.parquet` | 120,000 | Output of step A1, before cleaning |
 | `papers.parquet` | 119,919 | Final cleaned dataset used by every notebook |
 | `papers_sample.parquet` | 10,000 | Reproducible random sample (seed 42) for quick tests |
+
+**Embeddings dataset:** TODO: add after Kaggle upload.
 
 **Scope.** Primary categories `cs.LG`, `cs.CL` and `cs.CV`; first-version
 submission date from 2018 to 2024 inclusive. The sample is capped at 40,000
@@ -110,8 +118,35 @@ input — they are already cleaned or capped. The notebook writes four files to
 
 These counts explain why the sample is balanced and feed Person B's EDA
 class-balance section. The four CSVs are committed under `results/` so the EDA
-notebook can read them directly; other generated files in `results/` (matrices
-and split metadata) are ignored by Git.
+notebook can read them directly. The only other generated files tracked under
+`results/` are `feature_manifest.json`, `label_classes.json` and
+`embeddings_check.json`; matrices, split metadata and all `.npy` arrays are
+ignored by Git.
+
+## Key findings
+
+- **Balanced by construction.** The 40,000-per-category cap keeps 120,000 papers and
+  cleaning leaves 119,919 (`cs.CL` 39,980, `cs.CV` 39,973, `cs.LG` 39,966). Real arXiv
+  class proportions are uneven (`cs.CV` 96,756 vs `cs.CL` 51,918 uncapped), so all
+  modelling conclusions apply to the balanced sample. See
+  `images/2_uncapped_class_balance.png` and `images/2_class_balance.png`.
+- **Volume grows over time.** Uncapped yearly totals rise from 14,971 papers in 2018 to
+  58,861 in 2024, with `cs.CL` growing fastest (`images/2_year_category_trend.png`).
+- **Monthly and quarterly view.** The new monthly and quarterly line charts show the
+  short-term publication rhythm and seasonal structure inside the yearly trend, both
+  overall and per category (`images/2_monthly_volume.png`,
+  `images/2_quarterly_volume.png`).
+- **Length is a weak discriminator.** Abstracts have a median of about 168 words, with
+  only small differences between categories; the new per-category histograms show the
+  full shape and long tails, including a slight shift toward longer `cs.CV` abstracts
+  (`images/2_per_category_abstract_histograms.png`). Long abstracts will be truncated
+  by a 256-token embedding model.
+- **Text is the main signal.** Category-specific n-grams are highly exclusive (85%–99%
+  of their use in one category), while generic terms such as “model”, “base” and
+  “datum” appear in all three classes (`images/2_per_category_distinctive_unigrams.png`,
+  `images/2_per_category_distinctive_bigrams.png`).
+- **Labels are ambiguous.** 69,412 papers (about 58%) are cross-listed, so report macro-F1
+  and a per-class confusion matrix, especially for `cs.LG`.
 
 ## Team contributions
 
@@ -151,7 +186,7 @@ and split metadata) are ignored by Git.
 
 ### Sohaib
 
-- **Exploratory data analysis (EDA):** `notebooks/2_Notebook_EDA.ipynb` loads the
+- **Exploratory data analysis (EDA):** `notebooks/02_eda.ipynb` loads the
   cleaned dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and
   `cs.CV`, 2018 to 2024) and looks at it before modelling. It covers structure,
   missing values, duplicates, text length, class balance before and after the
@@ -217,10 +252,8 @@ and split metadata) are ignored by Git.
 
 ### Aliyan
 
-- **Problem statement:** Build a reproducible pipeline that prepares arXiv papers for
-  category classification and research-paper discovery. The pipeline preserves the
-  agreed dataset contract, prevents train/test leakage, and produces comparable text
-  and numeric feature representations.
+- **Problem statement:** Addressed by the top-level [Problem statement](#problem-statement)
+  section above.
 - **Preprocessing and normalization:** `notebooks/03_preprocessing.ipynb` loads the
   cleaned parquet dataset, validates the target and required fields, creates a
   stratified train/test split, and fits every transformation on the training data
@@ -229,10 +262,11 @@ and split metadata) are ignored by Git.
   statistics.
 - **Feature preparation:** The notebook compares TF-IDF features, sentence-transformer
   embeddings (`all-MiniLM-L6-v2`), and scaled numeric features derived from paper
-  metadata. TF-IDF uses `text_lemma`, while embeddings use `text_raw`. Embeddings
-  are generated separately for train and test for a reproducible 10,000-paper
-  stratified subset to keep CPU execution practical, while TF-IDF and numeric
-  features use the complete split.
+  metadata. TF-IDF uses `text_lemma`, while embeddings use `text_raw`. It encodes the
+  target with `LabelEncoder` (`results/label_classes.json`), prints the top 15 TF-IDF
+  terms per class, explains scaling per model type, and writes `feature_manifest.json`
+  from the actual in-memory values. The 10,000-paper stratified subset is a CPU-safe
+  demo; the full-corpus job is `src/embed_all.py` (see [How to run](#how-to-run)).
 - **Reproducibility and repository structure:** Shared settings such as categories,
   date range, embedding model, embedding dimension, sample size, and random seed
   are defined in `src/config.py`. Generated matrices and split metadata belong in
@@ -249,6 +283,48 @@ and split metadata) are ignored by Git.
   separate: run it on Kaggle with the Cornell snapshot attached, as described
   under [Uncapped category counts](#uncapped-category-counts).
 
+## How to run
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+Download the Kaggle dataset
+[`mohammadibraheem71/arxiv-papers-cleaned`](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned)
+and place `papers.parquet` in `data/`. Run the notebooks in order:
+`notebooks/01_data_cleaning.ipynb` → `notebooks/02_eda.ipynb` →
+`notebooks/03_preprocessing.ipynb`. Notebook `03` checks
+`RESEARCH_PAPERS_PATH`, then `/kaggle/input/arxiv-papers-cleaned/papers.parquet`,
+then `data/papers.parquet`. A notebook can be re-executed with
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace \
+  --ExecutePreprocessor.timeout=-1 notebooks/02_eda.ipynb
+```
+
+Notebook `04_uncapped_counts.ipynb` is separate: run it on Kaggle with the
+[Cornell arXiv snapshot](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+attached, as described under [Uncapped category counts](#uncapped-category-counts).
+
+**Full-corpus embeddings (Kaggle/GPU only).** Do not run this locally. On Kaggle, enable a
+GPU, attach `arxiv-papers-cleaned`, clone this repository, then run:
+
+```bash
+python src/embed_all.py \
+  --papers /kaggle/input/arxiv-papers-cleaned/papers.parquet \
+  --out /kaggle/working/embeddings.npy \
+  --check results/embeddings_check.json
+```
+
+The script writes `embeddings.npy` (119,919 × 384, L2-normalized, in exact
+`papers.parquet` row order) and a small `results/embeddings_check.json` containing the
+row count and SHA-256 of the `id` column. Publish `embeddings.npy` as a new public
+Kaggle Dataset, replace the embeddings placeholder above with its link, and commit
+`results/embeddings_check.json`.
+
 ## Future work
 
 - **Topic modeling (A3):** `src/topics.py` is an experimental, code-only scaffold
@@ -263,7 +339,7 @@ and split metadata) are ignored by Git.
 data/          # local parquet inputs; ignored by git
 images/        # plots used in the cleaning and EDA notebooks
 notebooks/     # cleaning, EDA, preprocessing and uncapped-count notebooks
-results/       # generated matrices/split metadata (ignored) + tracked uncapped CSVs
+results/       # tracked small manifests/CSVs; matrices, split metadata and npy ignored
 src/           # reusable project modules
 ```
 
