@@ -4,6 +4,7 @@ Two steps (run in order):
   python -m src.topics tune  --papers data/papers.parquet --out results   # pick k by c_v coherence
   python -m src.topics final --papers data/papers.parquet --out results --k 20   # train on all papers
 """
+import logging
 import os
 import pickle
 import multiprocessing as mp
@@ -13,6 +14,8 @@ from gensim.corpora import Dictionary
 from gensim.models import LdaMulticore, CoherenceModel
 
 from src.config import SEED
+
+logger = logging.getLogger(__name__)
 
 
 def load_tokens(papers_path, n=None):
@@ -37,7 +40,7 @@ def train_lda(corpus, dct, k, passes=5, workers=None):
                         eval_every=None)
 
 
-def coherence_cv(model, tokens, dct, topn=10):
+def _coherence_cv_lda(model, tokens, dct, topn=10):
     cm = CoherenceModel(model=model, texts=tokens, dictionary=dct,
                         coherence="c_v", topn=topn, processes=max(1, mp.cpu_count() - 1))
     return cm.get_coherence()
@@ -100,6 +103,98 @@ def cmd_final(a):
     print("\nc_v coherence (all papers):", round(coherence_cv(model, tokens, dct), 4))
     print("papers per topic:\n", assigned.lda_topic.value_counts().sort_index().to_string())
     print("saved to", a.out)
+
+
+
+# --- Phase 2 stubs (owner: Ibraheem) -------------------------------------
+# The LDA scaffold above is unchanged in behaviour. coherence_cv below is a
+# compatibility dispatcher: the legacy (model, tokens, dct) call still works,
+# while the new Phase 2 (topic_words, tokenized_texts) interface is available.
+
+
+def run_lda(texts: list[str], k: int = 20, seed: int = 42) -> dict:
+    """Train a k-topic LDA model and summarize it.
+
+    Purpose:
+        Phase 2 entry point for the LDA baseline on ``text_lemma`` documents.
+    Args:
+        texts: Tokenized documents as whitespace-separated strings.
+        k: Number of topics.
+        seed: Random seed, defaults to the project seed.
+    Returns:
+        dict, e.g. ``{"k": 20, "topic_words": [[...]], "model_path": "..."}``.
+    Owner:
+        Ibraheem.
+    """
+    logger.warning("STUB: run_lda")
+    # TODO(Ibraheem): reuse load_tokens/build_corpus/train_lda above; persist the
+    # model and return its top words per topic.
+    return {"k": k, "seed": seed, "topic_words": [["stub"] * 5 for _ in range(k)], "model_path": ""}
+
+
+def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") -> dict:
+    """Fit BERTopic on texts and precomputed embeddings.
+
+    Purpose:
+        Produce neural topics and per-document topic assignments.
+    Args:
+        texts: Raw abstracts/titles.
+        embeddings: Array of shape ``(n, 384)`` from data/embeddings.npy.
+        nr_topics: Target topic count or ``"auto"``.
+    Returns:
+        dict, e.g. ``{"nr_topics": 5, "topic_words": [[...]], "doc_topics": [...]}``.
+    Owner:
+        Ibraheem.
+    """
+    logger.warning("STUB: run_bertopic")
+    # TODO(Ibraheem): fit bertopic.BERTopic(embedding_model=embeddings), reduce
+    # topics with nr_topics, and return top words plus a doc-topic array.
+    return {"nr_topics": 5, "topic_words": [["stub"] * 5 for _ in range(5)], "doc_topics": [0] * len(texts)}
+
+
+def coherence_cv(
+    topic_words: list[list[str]] | object,
+    tokenized_texts: list[list[str]],
+    dct: object | None = None,
+    topn: int = 10,
+) -> float:
+    """Compute c_v coherence, accepting both the new and legacy call shapes.
+
+    Purpose:
+        Score topic quality from top words, or from a fitted Gensim model when
+        called by the existing LDA CLI: ``coherence_cv(model, tokens, dct)``.
+    Args:
+        topic_words: List of top-word lists, or a Gensim LDA model (legacy).
+        tokenized_texts: Tokenized documents, or the legacy ``tokens`` argument.
+        dct: Gensim dictionary; required for the legacy call shape.
+        topn: Number of top words considered by the legacy Gensim computation.
+    Returns:
+        float, e.g. ``0.0`` from the stub; legacy calls return the real c_v value.
+    Owner:
+        Ibraheem.
+    """
+    if hasattr(topic_words, "show_topic"):  # legacy Gensim model call
+        return _coherence_cv_lda(topic_words, tokenized_texts, dct, topn=topn)
+    logger.warning("STUB: coherence_cv")
+    # TODO(Ibraheem): implement c_v over topic_words and tokenized_texts.
+    return 0.0
+
+
+def label_topics(topic_words: list[list[str]]) -> dict[int, str]:
+    """Assign a short human-readable label to each topic id.
+
+    Purpose:
+        Turn top words into chart-friendly topic labels.
+    Args:
+        topic_words: Top words per topic id.
+    Returns:
+        dict[int, str], e.g. ``{0: "Topic 0"}``.
+    Owner:
+        Ibraheem.
+    """
+    logger.warning("STUB: label_topics")
+    # TODO(Ibraheem): use an LLM or a top-word heuristic to name each topic.
+    return {i: f"Topic {i}" for i in range(len(topic_words))}
 
 
 if __name__ == "__main__":
