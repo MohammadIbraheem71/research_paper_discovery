@@ -309,8 +309,12 @@ Notebook `04_uncapped_counts.ipynb` is separate: run it on Kaggle with the
 [Cornell arXiv snapshot](https://www.kaggle.com/datasets/Cornell-University/arxiv)
 attached, as described under [Uncapped category counts](#uncapped-category-counts).
 
-**Full-corpus embeddings (Kaggle/GPU only).** Do not run this locally. On Kaggle, enable a
-GPU, attach `arxiv-papers-cleaned`, clone this repository, then run:
+**Full-corpus embeddings (Kaggle/GPU only).** Do not run this locally. The easiest
+route is to import `notebooks/05_kaggle_embeddings.ipynb` into a Kaggle Notebook,
+attach `arxiv-papers-cleaned`, enable a GPU, and run all cells. It clones the
+repo, generates the embeddings and verifies them; publishing is manual.
+Equivalently, on Kaggle enable a GPU, attach `arxiv-papers-cleaned`, clone this
+repository, then run:
 
 ```bash
 python src/embed_all.py \
