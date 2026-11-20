@@ -318,7 +318,7 @@ repository, then run:
 
 ```bash
 python src/embed_all.py \
-  --papers /kaggle/input/arxiv-papers-cleaned/papers.parquet \
+  --papers /kaggle/input/datasets/mohammadibraheem71/arxiv-papers-cleaned/papers.parquet \
   --out /kaggle/working/embeddings.npy \
   --check results/embeddings_check.json
 ```
