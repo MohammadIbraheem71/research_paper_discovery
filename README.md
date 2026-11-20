@@ -292,6 +292,21 @@ python -m pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 ```
 
+### Environment setup
+
+```bash
+cp .env.example .env
+# Fill in your own key in .env, then:
+python -m src.check_env
+```
+
+`.env` is gitignored and `.env.example` contains placeholders only. The current
+stubs need no key; when the real LLM lands, use either a Gemini key from
+[Google AI Studio](https://aistudio.google.com/app/apikey) **or** a Groq key
+from [console.groq.com](https://console.groq.com/keys) — only one provider is
+required. `check_env` reports only which variables are set (never their values).
+Every teammate needs their own key: free tiers are rate-limited per key.
+
 Download the Kaggle dataset
 [`mohammadibraheem71/arxiv-papers-cleaned`](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned)
 and place `papers.parquet` in `data/`. Run the notebooks in order:
