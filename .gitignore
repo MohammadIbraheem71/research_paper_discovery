@@ -15,6 +15,7 @@ results/*
 !results/feature_manifest.json
 !results/label_classes.json
 !results/embeddings_check.json
+!results/topic_share_dummy.csv
 !results/uncapped_counts.csv
 !results/uncapped_counts_by_year.csv
 !results/uncapped_counts_pivot.csv
@@ -25,3 +26,12 @@ __pycache__/
 .ipynb_checkpoints/
 .kilo/
 /current_work_done.md
+
+# Phase 2 generated caches, databases and vector indexes
+cache/
+*.db
+*.sqlite
+*.sqlite3
+*.index
+*.faiss
+*.idx

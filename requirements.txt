@@ -9,3 +9,15 @@ seaborn
 spacy
 gensim
 jupyter
+langgraph
+langgraph-checkpoint-sqlite
+langchain-core
+faiss-cpu
+bertopic
+umap-learn
+hdbscan
+python-dotenv
+google-generativeai
+streamlit
+plotly
+pytest
