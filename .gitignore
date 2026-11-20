@@ -21,6 +21,7 @@ results/*
 !results/uncapped_counts_by_year.csv
 !results/uncapped_counts_pivot.csv
 !results/uncapped_totals_by_year.csv
+!results/split_metadata.json
 
 # Python caches, notebook checkpoints, internal tooling, audit artifact
 __pycache__/
