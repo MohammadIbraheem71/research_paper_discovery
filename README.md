@@ -29,7 +29,7 @@ It can be downloaded without a Kaggle login and contains:
 | `papers.parquet` | 119,919 | Final cleaned dataset used by every notebook |
 | `papers_sample.parquet` | 10,000 | Reproducible random sample (seed 42) for quick tests |
 
-**Embeddings dataset:** TODO: add after Kaggle upload.
+**Embeddings dataset:** [mohammadibraheem71/arxiv-papers-embeddings](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-embeddings) — 119,919 × 384 L2-normalized vectors in exact `papers.parquet` row order.
 
 **Scope.** Primary categories `cs.LG`, `cs.CL` and `cs.CV`; first-version
 submission date from 2018 to 2024 inclusive. The sample is capped at 40,000
@@ -325,9 +325,9 @@ python src/embed_all.py \
 
 The script writes `embeddings.npy` (119,919 × 384, L2-normalized, in exact
 `papers.parquet` row order) and a small `results/embeddings_check.json` containing the
-row count and SHA-256 of the `id` column. Publish `embeddings.npy` as a new public
-Kaggle Dataset, replace the embeddings placeholder above with its link, and commit
-`results/embeddings_check.json`.
+row count and SHA-256 of the `id` column. The published public dataset is linked
+under [Dataset](#dataset) above, and `results/embeddings_check.json` is committed
+under `results/`.
 
 ## Future work
 

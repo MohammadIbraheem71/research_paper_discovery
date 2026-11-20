@@ -1,0 +1,9 @@
+{
+  "rows": 119919,
+  "embedding_dim": 384,
+  "embedding_file": "embeddings.npy",
+  "id_sha256": "3fc6a0acce9fec9dadbbd240c323759fcfedd7b003bdcb973e2035906002c0d5",
+  "model": "all-MiniLM-L6-v2",
+  "batch_size": 128,
+  "source": "papers.parquet"
+}
