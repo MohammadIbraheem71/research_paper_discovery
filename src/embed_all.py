@@ -18,12 +18,18 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 
+# When launched as `python src/embed_all.py`, the script directory (not the repo
+# root) is first on sys.path, so add the repo root before importing project code.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 from src.config import EMBEDDING_DIM, EMBEDDING_MODEL
 
 
