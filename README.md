@@ -310,7 +310,7 @@ Notebook `04_uncapped_counts.ipynb` is separate: run it on Kaggle with the
 attached, as described under [Uncapped category counts](#uncapped-category-counts).
 
 **Full-corpus embeddings (Kaggle/GPU only).** Do not run this locally. The easiest
-route is to import `notebooks/05_kaggle_embeddings.ipynb` into a Kaggle Notebook,
+route is to import `notebooks/00_kaggle_embeddings.ipynb` into a Kaggle Notebook,
 attach `arxiv-papers-cleaned`, enable a GPU, and run all cells. It clones the
 repo, generates the embeddings and verifies them; publishing is manual.
 Equivalently, on Kaggle enable a GPU, attach `arxiv-papers-cleaned`, clone this
@@ -328,6 +328,56 @@ The script writes `embeddings.npy` (119,919 × 384, L2-normalized, in exact
 row count and SHA-256 of the `id` column. The published public dataset is linked
 under [Dataset](#dataset) above, and `results/embeddings_check.json` is committed
 under `results/`.
+
+## Phase 2 architecture
+
+Phase 2 adds a four-route question-answering graph on top of the Phase 1 data and
+embeddings. All node bodies are currently offline stubs; see `OWNERS.md` for who
+implements which function. `src/contracts.py` is frozen and shared by everyone.
+
+```mermaid
+flowchart TD
+    S([START]) --> R[router_node]
+    R -->|literature| Q[query_rewrite_node]
+    R -->|trend| T[trend_lookup_node]
+    R -->|hybrid| F[fanout]
+    R -->|fallback| FB[fallback_node]
+    F --> Q
+    F --> T
+    Q --> RET[retrieve_node]
+    RET --> G{grade_docs_node}
+    G -->|no and retry_count < MAX_RETRIES| Q
+    G -->|yes / retries exhausted| A[generate_answer_node]
+    G -->|hybrid: retries exhausted| SYN[synthesize_node]
+    T --> SYN
+    A --> E([END])
+    SYN --> E
+    FB --> E
+```
+
+Module map:
+
+| Module | Responsibility |
+|---|---|
+| `src/contracts.py`, `src/settings_p2.py` | Frozen types, constants and paths |
+| `src/llm.py`, `src/rag.py` | LLM calls with cache/backoff; retrieval and grounded answers |
+| `src/topics.py`, `src/trends.py` | LDA/BERTopic topics and quarterly topic-share trends |
+| `src/classify.py` | Four classifier variants and comparison metrics |
+| `src/nodes.py`, `src/graph.py` | Graph nodes and the compiled LangGraph with SQLite checkpoints |
+| `src/evaluate.py`, `eval/` | Retrieval/router metrics and hand-labelled gold files |
+| `app.py` | Streamlit shell; starts without an API key |
+| `notebooks/05_*`–`10_*` | One notebook per workstream (not executed yet) |
+
+Run the offline skeleton tests from the repo root:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+The tests check imports, retrieval `Doc` shapes and filters, all four routes, the
+retry loop, the `TrendData` contract, the ranking metrics and the eval JSON
+files. No API key, GPU, model download or `data/embeddings.npy` is needed.
 
 ## Future work
 
