@@ -1,0 +1,34 @@
+[
+  {
+    "question": "Find recent papers about graph neural networks for molecules",
+    "route": "literature"
+  },
+  {
+    "question": "Which arXiv papers cite the original transformer paper?",
+    "route": "literature"
+  },
+  {
+    "question": "How has the share of NLP papers changed over time?",
+    "route": "trend"
+  },
+  {
+    "question": "Which computer vision topics are growing quarter by quarter?",
+    "route": "trend"
+  },
+  {
+    "question": "Show papers about CLIP and how their topic share trends over time",
+    "route": "hybrid"
+  },
+  {
+    "question": "Find related work on retrieval augmentation and describe its growing popularity over time",
+    "route": "hybrid"
+  },
+  {
+    "question": "What is the weather in Cairo tomorrow?",
+    "route": "fallback"
+  },
+  {
+    "question": "Hello",
+    "route": "fallback"
+  }
+]

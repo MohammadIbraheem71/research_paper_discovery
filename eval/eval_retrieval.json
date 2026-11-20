@@ -1,0 +1,31 @@
+[
+  {
+    "question": "Find papers about low-resource machine translation between 2020 and 2023",
+    "filters": {
+      "year_min": 2020,
+      "year_max": 2023,
+      "category": "cs.CL"
+    },
+    "relevant_ids": [],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers on 3D object detection from 2022 onwards",
+    "filters": {
+      "year_min": 2022,
+      "category": "cs.CV"
+    },
+    "relevant_ids": [],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Which papers discuss graph learning in 2024?",
+    "filters": {
+      "year_min": 2024,
+      "year_max": 2024,
+      "category": "cs.LG"
+    },
+    "relevant_ids": [],
+    "needs_human_verification": true
+  }
+]
