@@ -191,12 +191,13 @@ def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") ->
         cluster_selection_method="eom",
     )
     topic_model = BERTopic(
-        embedding_model=np.asarray(embeddings),
         umap_model=umap_model,
         hdbscan_model=hdbscan_model,
         nr_topics=nr_topics,
         low_memory=True,
         calculate_probabilities=False,
+        # BERTopic 0.17.4 expects a model/string here, not an embedding array;
+        # the precomputed array is passed to fit_transform instead.
         verbose=True,
     )
     doc_topics, _ = topic_model.fit_transform(list(texts), np.asarray(embeddings))
