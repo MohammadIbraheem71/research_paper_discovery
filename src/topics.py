@@ -167,10 +167,59 @@ def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") ->
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: run_bertopic")
-    # TODO(Ibraheem): fit bertopic.BERTopic(embedding_model=embeddings), reduce
-    # topics with nr_topics, and return top words plus a doc-topic array.
-    return {"nr_topics": 5, "topic_words": [["stub"] * 5 for _ in range(5)], "doc_topics": [0] * len(texts)}
+    import hdbscan
+    import numpy as np
+    import umap
+    from bertopic import BERTopic
+
+    from src.settings_p2 import CACHE_DIR
+
+    # UMAP/HDBSCAN settings are the standard BERTopic defaults; random_state
+    # makes the projection reproducible and low_memory bounds peak RSS.
+    umap_model = umap.UMAP(
+        n_neighbors=15,
+        n_components=5,
+        metric="cosine",
+        random_state=42,
+        low_memory=True,
+        n_jobs=4,
+    )
+    hdbscan_model = hdbscan.HDBSCAN(
+        min_cluster_size=50,
+        metric="euclidean",
+        cluster_selection_method="eom",
+    )
+    topic_model = BERTopic(
+        embedding_model=np.asarray(embeddings),
+        umap_model=umap_model,
+        hdbscan_model=hdbscan_model,
+        nr_topics=nr_topics,
+        random_state=42,
+        calculate_probabilities=False,
+        verbose=True,
+    )
+    doc_topics, _ = topic_model.fit_transform(list(texts), np.asarray(embeddings))
+    doc_topics = [int(t) for t in doc_topics]
+
+    topic_ids = [
+        int(t) for t in topic_model.get_topic_info()["Topic"] if int(t) != -1
+    ]
+    topic_words = [
+        [word for word, _ in topic_model.get_topic(t)[:10]] for t in topic_ids
+    ]
+
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    model_path = str(CACHE_DIR / "bertopic_model")
+    topic_model.save(model_path, serialization="pickle")
+
+    return {
+        "nr_topics": len(topic_ids),
+        "topic_ids": topic_ids,
+        "topic_words": topic_words,
+        "doc_topics": doc_topics,
+        "outlier_share": float(np.mean(np.array(doc_topics) == -1)),
+        "model_path": model_path,
+    }
 
 
 def coherence_cv(
