@@ -273,9 +273,18 @@ def label_topics(topic_words: list[list[str]]) -> dict[int, str]:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: label_topics")
-    # TODO(Ibraheem): use an LLM or a top-word heuristic to name each topic.
-    return {i: f"Topic {i}" for i in range(len(topic_words))}
+    # Offline heuristic: the three most salient top words make a short,
+    # chart-friendly label. No LLM or API key is needed.
+    labels: dict[int, str] = {}
+    for i, words in enumerate(topic_words):
+        picked: list[str] = []
+        for word in words:
+            if word.lower() not in picked:
+                picked.append(word.lower())
+            if len(picked) == 3:
+                break
+        labels[i] = " / ".join(picked).title() if picked else f"Topic {i}"
+    return labels
 
 
 if __name__ == "__main__":
