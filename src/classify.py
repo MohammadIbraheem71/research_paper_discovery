@@ -1,15 +1,26 @@
-"""Category classification skeleton (logreg / NB / SVM / embeddings).
+"""Category classification: TF-IDF baselines and an embedding classifier.
 
-Owner: Sohaib. Every function is an offline stub until the real pipeline lands.
+Owner: Sohaib. Real implementations replace the Phase 2 skeleton stubs.
 """
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_recall_fscore_support,
+)
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
 
 from src.config import CATEGORIES
 
@@ -19,58 +30,48 @@ logger = logging.getLogger(__name__)
 def load_split() -> tuple[list[str], list[str]]:
     """Load the train/test paper ids from the Phase 1 split.
 
-    Purpose:
-        Give every classification experiment the same reproducible split.
-    Args:
-        None.
-    Returns:
-        tuple[list[str], list[str]], e.g. ``(["id-1", ...], ["id-2", ...])``.
-    Owner:
-        Sohaib.
+    Reads ``results/split_metadata.json`` and returns the two id lists in the
+    order they were written (stable, so every experiment shares the split).
     """
-    logger.warning("STUB: load_split")
-    # TODO(Sohaib): read results/split_metadata.json (regenerate with notebook 03
-    # if missing) and return the two id lists in a stable order.
-    return ["train-0000", "train-0001"], ["test-0000", "test-0001"]
+    root = Path(__file__).resolve().parents[1]
+    path = root / "results" / "split_metadata.json"
+    with path.open(encoding="utf-8") as fh:
+        meta = json.load(fh)
+    return list(meta["train_ids"]), list(meta["test_ids"])
 
 
 def load_xy(df: pd.DataFrame, ids: list[str]) -> tuple[list[str], np.ndarray]:
-    """Select rows by id and split into texts and encoded labels.
+    """Select rows by id and split into texts and encoded labels."""
+    label_path = Path(__file__).resolve().parents[1] / "results" / "label_classes.json"
+    with label_path.open(encoding="utf-8") as fh:
+        classes = json.load(fh)["classes_"]
+    class_to_idx = {name: i for i, name in enumerate(classes)}
 
-    Purpose:
-        Turn the cleaned dataframe into model inputs.
-    Args:
-        df: Cleaned papers dataframe.
-        ids: Paper ids for this split.
-    Returns:
-        tuple[list[str], np.ndarray], e.g. ``(["abstract text"], array([0, 1]))``.
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: load_xy")
-    # TODO(Sohaib): filter df to ids, use text_lemma as X and primary_category
-    # encoded with results/label_classes.json as y.
-    subset = df[df["id"].isin(ids)] if "id" in df.columns else df.iloc[:0]
-    texts = subset.get("text_lemma", pd.Series(dtype=str)).astype(str).tolist()
-    return texts, np.zeros(len(texts), dtype=np.int64)
+    id_col = "id" if "id" in df.columns else df.columns[0]
+    indexed = df.set_index(id_col)
+    available = [i for i in ids if i in indexed.index]
+    if len(available) != len(ids):
+        missing = [i for i in ids if i not in indexed.index]
+        logger.warning("load_xy: %d ids missing from df", len(missing))
+    subset = indexed.loc[available]
+
+    texts = subset["text_lemma"].astype(str).tolist()
+    labels = subset["primary_category"].astype(str).map(
+        lambda c: class_to_idx.get(c, -1)
+    ).to_numpy(dtype=np.int64)
+    return texts, labels
 
 
 def build_tfidf(train_texts: list[str]) -> Any:
-    """Fit a TF-IDF vectorizer on the training texts.
-
-    Purpose:
-        Produce the sparse text features for the linear baselines.
-    Args:
-        train_texts: Lemmatized training documents.
-    Returns:
-        Any, e.g. a fitted ``TfidfVectorizer`` (stub returns ``None``).
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: build_tfidf")
-    # TODO(Sohaib): TfidfVectorizer(ngram_range=(1,2), min_df=2, sublinear_tf=True,
-    # norm="l2") to match notebook 03; return the fitted vectorizer.
-    return None
+    """Fit a TF-IDF vectorizer on the training texts."""
+    vectorizer = TfidfVectorizer(
+        ngram_range=(1, 2),
+        min_df=2,
+        sublinear_tf=True,
+        norm="l2",
+    )
+    vectorizer.fit(train_texts)
+    return vectorizer
 
 
 def train_model(
@@ -78,23 +79,19 @@ def train_model(
     X_train: Any,
     y_train: np.ndarray,
 ) -> Any:
-    """Train one classifier variant.
-
-    Purpose:
-        Single factory for the four comparison models.
-    Args:
-        name: One of ``"logreg"``, ``"nb"``, ``"svm"``, ``"logreg_emb"``.
-        X_train: Training features (sparse TF-IDF or dense embeddings).
-        y_train: Encoded training labels.
-    Returns:
-        Any, e.g. a fitted estimator (stub returns ``None``).
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: train_model")
-    # TODO(Sohaib): dispatch to LogisticRegression / MultinomialNB / LinearSVC;
-    # logreg_emb uses the same logistic regression on dense embeddings.
-    return None
+    """Train one classifier variant."""
+    if name == "logreg":
+        model = LogisticRegression(max_iter=1000, C=1.0, n_jobs=-1, random_state=42)
+    elif name == "nb":
+        model = MultinomialNB(alpha=1.0)
+    elif name == "svm":
+        model = LinearSVC(C=1.0, random_state=42)
+    elif name == "logreg_emb":
+        model = LogisticRegression(max_iter=2000, C=1.0, n_jobs=-1, random_state=42)
+    else:
+        raise ValueError(f"Unknown model name: {name}")
+    model.fit(X_train, y_train)
+    return model
 
 
 def evaluate(
@@ -103,66 +100,72 @@ def evaluate(
     y_test: np.ndarray,
     class_names: list[str],
 ) -> dict:
-    """Score a fitted model and return a serializable metrics dictionary.
-
-    Purpose:
-        One comparable metrics payload per model variant.
-    Args:
-        model: Fitted estimator.
-        X_test: Test features.
-        y_test: Encoded test labels.
-        class_names: Label order from results/label_classes.json.
-    Returns:
-        dict, e.g. ``{"accuracy": 0.0, "macro_f1": 0.0, "per_class":
-        {"cs.LG": {"precision": 0.0, "recall": 0.0, "f1": 0.0}}, "confusion":
-        [[0, 0, 0], [0, 0, 0], [0, 0, 0]]}``.
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: evaluate")
-    # TODO(Sohaib): predict, then compute accuracy, macro F1, per-class precision/
-    # recall/F1 and the confusion matrix as plain Python lists.
-    names = class_names or CATEGORIES
+    """Score a fitted model and return a serializable metrics dictionary."""
+    y_pred = model.predict(X_test)
+    names = list(class_names) if class_names else list(CATEGORIES)
+    acc = float(accuracy_score(y_test, y_pred))
+    macro_f1 = float(f1_score(y_test, y_pred, average="macro", zero_division=0))
+    prec, rec, f1, _ = precision_recall_fscore_support(
+        y_test, y_pred, labels=list(range(len(names))), zero_division=0
+    )
+    cm = confusion_matrix(y_test, y_pred, labels=list(range(len(names))))
+    per_class = {
+        names[i]: {
+            "precision": float(prec[i]),
+            "recall": float(rec[i]),
+            "f1": float(f1[i]),
+        }
+        for i in range(len(names))
+    }
     return {
-        "accuracy": 0.0,
-        "macro_f1": 0.0,
-        "per_class": {n: {"precision": 0.0, "recall": 0.0, "f1": 0.0} for n in names},
-        "confusion": [[0 for _ in names] for _ in names],
+        "accuracy": acc,
+        "macro_f1": macro_f1,
+        "per_class": per_class,
+        "confusion": cm.tolist(),
     }
 
 
 def save_metrics(results: dict, path: str | Path) -> None:
-    """Write a metrics dictionary to JSON.
-
-    Purpose:
-        Persist classification results for the README and comparison table.
-    Args:
-        results: Output of :func:`evaluate`.
-        path: Destination JSON path.
-    Returns:
-        None, e.g. ``None`` after writing the file.
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: save_metrics")
-    # TODO(Sohaib): json.dump(results, ...) with parent.mkdir(parents=True).
+    """Write a metrics dictionary to JSON or CSV, depending on the suffix."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.suffix.lower() == ".csv":
+        rows = []
+        models = results.get("models", results if isinstance(results, dict) else None)
+        if isinstance(models, list):
+            for m in models:
+                row = {"model": m["model"], "accuracy": m["accuracy"], "macro_f1": m["macro_f1"]}
+                for cls, vals in m.get("per_class", {}).items():
+                    for metric, value in vals.items():
+                        row[f"{cls}_{metric}"] = value
+                rows.append(row)
+        pd.DataFrame(rows).to_csv(path, index=False)
+        return None
+    with path.open("w", encoding="utf-8") as fh:
+        json.dump(results, fh, indent=2)
     return None
 
 
 def plot_confusion(cm: list[list[int]], class_names: list[str], path: str | Path) -> str:
-    """Plot a confusion matrix and return the saved image path.
+    """Plot a confusion matrix and return the saved image path."""
+    import matplotlib
 
-    Purpose:
-        Visual comparison of per-class errors.
-    Args:
-        cm: Confusion matrix as nested lists.
-        class_names: Label order.
-        path: Destination PNG path.
-    Returns:
-        str, e.g. ``"results/confusion.png"`` (no file is written by the stub).
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: plot_confusion")
-    # TODO(Sohaib): seaborn heatmap with annotations, tight layout, save to path.
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    names = list(class_names)
+    plt.figure(figsize=(5, 4))
+    sns.heatmap(
+        cm, annot=True, fmt="d", cmap="Blues",
+        xticklabels=names, yticklabels=names,
+    )
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.title("Confusion matrix")
+    plt.tight_layout()
+    plt.savefig(path, dpi=120)
+    plt.close()
     return str(path)
