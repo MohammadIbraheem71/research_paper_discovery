@@ -25,3 +25,6 @@ its code cell in the generating notebook.
 | `2_corr_heatmap.png` | Correlations among length, year and number of categories | All relationships are weak (|r| up to ~0.12), so the numeric features can be used together. |
 | `2_monthly_volume.png` | Papers per month overall and per category | Reveals short-term seasonality and the steady growth trend hidden by yearly aggregation. |
 | `2_quarterly_volume.png` | Papers per quarter overall and per category | A smoother view of growth and category ordering than the monthly chart. |
+| `6_rising_topic_shares.png` | Quarterly share of the top 5 rising BERTopic topics | Shows which embedding-based themes gained share; slopes and p-values are in notebook 06. |
+| `6_declining_topic_shares.png` | Quarterly share of the top 5 declining BERTopic topics | Shows the largest share losses, led by `Image / Segmentation / Detection`. |
+| `6_topic_share_heatmap.png` | Heatmap of all 24 topics by 28 quarters | Makes topic coverage gaps and long-run share changes visible at a glance. |

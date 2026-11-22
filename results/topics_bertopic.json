@@ -1,0 +1,393 @@
+{
+  "model": "BERTopic",
+  "nr_topics": 24,
+  "nr_topics_requested": 25,
+  "c_v": 0.5629,
+  "outlier_share": 0.4282,
+  "topics": [
+    {
+      "topic_id": 0,
+      "label": "Language / Model / Text",
+      "top_words": [
+        "language",
+        "model",
+        "text",
+        "translation",
+        "large",
+        "dataset",
+        "base",
+        "question",
+        "word",
+        "system"
+      ]
+    },
+    {
+      "topic_id": 1,
+      "label": "Image / Segmentation / Detection",
+      "top_words": [
+        "image",
+        "segmentation",
+        "detection",
+        "label",
+        "anomaly",
+        "feature",
+        "learning",
+        "domain",
+        "object",
+        "dataset"
+      ]
+    },
+    {
+      "topic_id": 2,
+      "label": "Network / Neural / Learning",
+      "top_words": [
+        "network",
+        "neural",
+        "learning",
+        "architecture",
+        "training",
+        "gradient",
+        "layer",
+        "model",
+        "quantization",
+        "weight"
+      ]
+    },
+    {
+      "topic_id": 3,
+      "label": "Emotion / Sentiment / Bias",
+      "top_words": [
+        "emotion",
+        "sentiment",
+        "bias",
+        "language",
+        "model",
+        "social",
+        "analysis",
+        "gender",
+        "dataset",
+        "legal"
+      ]
+    },
+    {
+      "topic_id": 4,
+      "label": "Policy / Reinforcement / Learning",
+      "top_words": [
+        "policy",
+        "reinforcement",
+        "learning",
+        "agent",
+        "reward",
+        "algorithm",
+        "environment",
+        "learn",
+        "action",
+        "offline"
+      ]
+    },
+    {
+      "topic_id": 5,
+      "label": "Image / Diffusion / Gan",
+      "top_words": [
+        "image",
+        "diffusion",
+        "gan",
+        "model",
+        "generation",
+        "generative",
+        "video",
+        "quality",
+        "generate",
+        "motion"
+      ]
+    },
+    {
+      "topic_id": 6,
+      "label": "Adversarial / Attack / Robustness",
+      "top_words": [
+        "adversarial",
+        "attack",
+        "robustness",
+        "model",
+        "client",
+        "perturbation",
+        "learning",
+        "federated",
+        "training",
+        "privacy"
+      ]
+    },
+    {
+      "topic_id": 7,
+      "label": "Pose / Point / Cloud",
+      "top_words": [
+        "pose",
+        "point",
+        "cloud",
+        "estimation",
+        "object",
+        "depth",
+        "view",
+        "image",
+        "human",
+        "feature"
+      ]
+    },
+    {
+      "topic_id": 8,
+      "label": "Series / Time / Forecasting",
+      "top_words": [
+        "series",
+        "time",
+        "forecasting",
+        "model",
+        "neural",
+        "datum",
+        "prediction",
+        "network",
+        "learning",
+        "pde"
+      ]
+    },
+    {
+      "topic_id": 9,
+      "label": "Bandit / Regret / Algorithm",
+      "top_words": [
+        "bandit",
+        "regret",
+        "algorithm",
+        "optimization",
+        "arm",
+        "bayesian",
+        "uncertainty",
+        "online",
+        "optimal",
+        "function"
+      ]
+    },
+    {
+      "topic_id": 10,
+      "label": "Graph / Node / Gnn",
+      "top_words": [
+        "graph",
+        "node",
+        "gnn",
+        "neural",
+        "network",
+        "representation",
+        "structure",
+        "entity",
+        "networks",
+        "learning"
+      ]
+    },
+    {
+      "topic_id": 11,
+      "label": "Action / Video / Recognition",
+      "top_words": [
+        "action",
+        "video",
+        "recognition",
+        "sign",
+        "temporal",
+        "activity",
+        "skeleton",
+        "feature",
+        "gait",
+        "dataset"
+      ]
+    },
+    {
+      "topic_id": 12,
+      "label": "Fairness / Fair / Decision",
+      "top_words": [
+        "fairness",
+        "fair",
+        "decision",
+        "class",
+        "bias",
+        "datum",
+        "machine",
+        "drift",
+        "algorithm",
+        "learning"
+      ]
+    },
+    {
+      "topic_id": 13,
+      "label": "Traffic / Trajectory / Prediction",
+      "top_words": [
+        "traffic",
+        "trajectory",
+        "prediction",
+        "temporal",
+        "pedestrian",
+        "lane",
+        "vehicle",
+        "spatial",
+        "road",
+        "model"
+      ]
+    },
+    {
+      "topic_id": 14,
+      "label": "Face / Recognition / Image",
+      "top_words": [
+        "face",
+        "recognition",
+        "image",
+        "deepfake",
+        "gaze",
+        "facial",
+        "iris",
+        "detection",
+        "fingerprint",
+        "forgery"
+      ]
+    },
+    {
+      "topic_id": 15,
+      "label": "Molecular / Molecule / Protein",
+      "top_words": [
+        "molecular",
+        "molecule",
+        "protein",
+        "drug",
+        "chemical",
+        "property",
+        "graph",
+        "structure",
+        "prediction",
+        "model"
+      ]
+    },
+    {
+      "topic_id": 16,
+      "label": "Causal / Imputation / Treatment",
+      "top_words": [
+        "causal",
+        "imputation",
+        "treatment",
+        "variable",
+        "effect",
+        "datum",
+        "miss",
+        "discovery",
+        "observational",
+        "intervention"
+      ]
+    },
+    {
+      "topic_id": 17,
+      "label": "Clustering / Cluster / View",
+      "top_words": [
+        "clustering",
+        "cluster",
+        "view",
+        "algorithm",
+        "datum",
+        "multi",
+        "subspace",
+        "dimensional",
+        "topological",
+        "base"
+      ]
+    },
+    {
+      "topic_id": 18,
+      "label": "Hash / Food / Sketch",
+      "top_words": [
+        "hash",
+        "food",
+        "sketch",
+        "image",
+        "retrieval",
+        "hashing",
+        "fashion",
+        "recipe",
+        "code",
+        "deep"
+      ]
+    },
+    {
+      "topic_id": 19,
+      "label": "Tensor / Matrix / Factorization",
+      "top_words": [
+        "tensor",
+        "matrix",
+        "factorization",
+        "rank",
+        "completion",
+        "user",
+        "recommendation",
+        "nmf",
+        "algorithm",
+        "low"
+      ]
+    },
+    {
+      "topic_id": 20,
+      "label": "Quantum / Classical / Machine",
+      "top_words": [
+        "quantum",
+        "classical",
+        "machine",
+        "hybrid",
+        "circuit",
+        "computing",
+        "qml",
+        "learning",
+        "algorithm",
+        "model"
+      ]
+    },
+    {
+      "topic_id": 21,
+      "label": "Radar / Sar / Fusion",
+      "top_words": [
+        "radar",
+        "sar",
+        "fusion",
+        "camera",
+        "sensor",
+        "object",
+        "atr",
+        "detection",
+        "image",
+        "perception"
+      ]
+    },
+    {
+      "topic_id": 22,
+      "label": "Emergent / Agent / Communication",
+      "top_words": [
+        "emergent",
+        "agent",
+        "communication",
+        "language",
+        "emergence",
+        "compositionality",
+        "game",
+        "referential",
+        "compositional",
+        "human"
+      ]
+    },
+    {
+      "topic_id": 23,
+      "label": "Patent / Claim / Text",
+      "top_words": [
+        "patent",
+        "claim",
+        "text",
+        "model",
+        "technology",
+        "language",
+        "base",
+        "similarity",
+        "generation",
+        "invention"
+      ]
+    }
+  ]
+}

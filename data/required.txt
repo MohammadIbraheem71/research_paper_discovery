@@ -1,0 +1,25 @@
+Files that must be placed in data/ by you (all are gitignored; never commit them):
+
+1. papers.parquet
+   Cleaned arXiv cs.LG/cs.CL/cs.CV dataset with 119,919 rows.
+   Source: https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned
+   Place the downloaded file at data/papers.parquet.
+   notebooks/03_preprocessing.ipynb also accepts RESEARCH_PAPERS_PATH in .env.
+
+2. embeddings.npy
+   Full embedding matrix, shape (119919, 384), float32, model all-MiniLM-L6-v2.
+   Source: https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-embeddings
+   Place the downloaded file at data/embeddings.npy.
+   Row order must match papers.parquet; the id checksum is recorded in
+   results/embeddings_check.json.
+
+3. doc_topics.parquet
+   Output of notebooks/05_topic_modeling.ipynb with columns
+   id, lda_topic, bertopic_topic, in the same row order as papers.parquet.
+   Normally generated locally by the notebook. If topic modeling is run on
+   Kaggle instead, place the returned file at data/doc_topics.parquet yourself.
+
+Notes:
+- papers_raw.parquet and papers_sample.parquet are optional local working copies.
+- Put your own .env in the repository root, not in data/. Never commit keys.
+- *.parquet and *.npy are ignored by git; leave them out of commits.
