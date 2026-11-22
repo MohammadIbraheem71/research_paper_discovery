@@ -1,6 +1,7 @@
 # Local data, generated matrices and embeddings (never commit these)
 data/*
 !data/.gitkeep
+!data/required.txt
 *.parquet
 *.npy
 
