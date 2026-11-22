@@ -10,7 +10,7 @@ import re
 
 import pandas as pd
 
-from src import rag, trends
+from src import llm, rag, trends
 from src.contracts import Filters, GraphState, Route
 from src.settings_p2 import TOP_K
 
@@ -43,33 +43,91 @@ def _extract_filters(question: str) -> Filters:
     return filters
 
 
-def router_node(state: GraphState) -> GraphState:
-    """Choose the route and extract metadata filters.
+VALID_ROUTES = {"literature", "trend", "hybrid", "fallback"}
 
-    Purpose:
-        Send each question down the literature, trend, hybrid or fallback path.
-    Args:
-        state: GraphState containing ``question``.
-    Returns:
-        GraphState, e.g. ``{"route": "literature", "filters": {}, "llm_calls": 0}``.
-    Owner:
-        Sohaib.
-    """
-    logger.warning("STUB: router_node")
-    # TODO(Sohaib): replace keyword rules with the real router LLM call.
-    question = (state.get("question") or "").strip()
+
+def _keyword_route(question: str) -> Route:
     low = question.lower()
     has_trend = any(w in low for w in TREND_WORDS)
     has_retrieval = any(w in low for w in RETRIEVAL_WORDS)
     if not question or not (has_trend or has_retrieval):
-        route: Route = "fallback"
-    elif has_trend and has_retrieval:
-        route = "hybrid"
-    elif has_trend:
-        route = "trend"
-    else:
-        route = "literature"
-    return GraphState(route=route, filters=_extract_filters(question), llm_calls=state.get("llm_calls", 0))
+        return "fallback"
+    if has_trend and has_retrieval:
+        return "hybrid"
+    if has_trend:
+        return "trend"
+    return "literature"
+
+
+def _coerce_filters(raw: Any, question: str) -> Filters:
+    filters: Filters = {}
+    if isinstance(raw, dict):
+        for key in ("year_min", "year_max", "topic"):
+            value = raw.get(key)
+            if isinstance(value, bool):
+                continue
+            if isinstance(value, int):
+                filters[key] = value  # type: ignore[assignment]
+            elif isinstance(value, str) and value.isdigit():
+                filters[key] = int(value)  # type: ignore[assignment]
+        cat = raw.get("category")
+        if isinstance(cat, str) and cat in ("cs.LG", "cs.CL", "cs.CV"):
+            filters["category"] = cat
+    if not filters:
+        filters = _extract_filters(question)
+    return filters
+
+
+def router_node(state: GraphState) -> GraphState:
+    """Choose the route and extract metadata filters.
+
+    Uses the LLM (JSON mode) when it is available and returns a valid route;
+    the keyword rules above remain the deterministic fallback so the graph keeps
+    working with Aliyan's stub LLM and with no API key.
+    """
+    question = (state.get("question") or "").strip()
+    calls = state.get("llm_calls", 0)
+    route: Route | None = None
+    filters: Filters | None = None
+
+    if question:
+        prompt = (
+            "You are a router for a research-paper discovery system over arXiv "
+            "categories cs.LG, cs.CL and cs.CV (2018-2024). Classify the user "
+            "question into exactly one route and extract optional filters.\n\n"
+            "Routes:\n"
+            "- literature: find/summarize/recommend specific papers.\n"
+            "- trend: how a topic's share/popularity changes over time.\n"
+            "- hybrid: both papers and their trend over time.\n"
+            "- fallback: off-topic, empty or unanswerable.\n\n"
+            "Filters (optional): year_min, year_max (integers), category "
+            "(cs.LG/cs.CL/cs.CV), topic (int).\n\n"
+            "Reply with JSON only: "
+            '{"route": "<route>", "filters": {"year_min": ..., "year_max": ..., '
+            '"category": ..., "topic": ...}}. Omit filter keys you are unsure about.'
+        )
+        try:
+            payload = llm.llm_json(prompt, system="Return strict JSON only.")
+            calls = _calls(state)
+            candidate = str(payload.get("route", "")).strip().lower()
+            if candidate in VALID_ROUTES:
+                route = candidate  # type: ignore[assignment]
+            filters = _coerce_filters(payload.get("filters"), question)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.warning("router_node LLM failed (%s); using keyword fallback", exc)
+            route = None
+            filters = None
+
+    if route is None:
+        route = _keyword_route(question)
+    if filters is None:
+        filters = _extract_filters(question)
+
+    return GraphState(
+        route=route,
+        filters=filters,
+        llm_calls=calls if question else state.get("llm_calls", 0),
+    )
 
 
 def fallback_node(state: GraphState) -> GraphState:
@@ -84,10 +142,12 @@ def fallback_node(state: GraphState) -> GraphState:
     Owner:
         Sohaib.
     """
-    logger.warning("STUB: fallback_node")
-    # TODO(Sohaib): write a fixed clarification message in the project's voice.
     return GraphState(
-        answer="STUB: please ask about arXiv cs.LG/cs.CL/cs.V papers or their trends.",
+        answer=(
+            "I focus on arXiv papers in cs.LG, cs.CL and cs.CV (2018-2024) and "
+            "their trends over time. Try asking for papers on a topic, how a topic "
+            "has changed over time, or both together."
+        ),
         citations=[],
         low_confidence=True,
         llm_calls=state.get("llm_calls", 0),
@@ -106,13 +166,63 @@ def synthesize_node(state: GraphState) -> GraphState:
     Owner:
         Sohaib.
     """
-    logger.warning("STUB: synthesize_node")
-    # TODO(Sohaib): call llm.llm_call with both docs and trend_data summarized.
+    docs = state.get("docs", [])
+    trend = state.get("trend_data")
     citations = [
-        {"arxiv_id": d["arxiv_id"], "title": d["title"]} for d in state.get("docs", [])
+        {"arxiv_id": d["arxiv_id"], "title": d["title"]} for d in docs
     ]
+
+    evidence_lines = []
+    if docs:
+        evidence_lines.append("Retrieved papers:")
+        for d in docs[:TOP_K]:
+            evidence_lines.append(
+                f"- {d['title']} ({d['arxiv_id']}, {d['year']}, {d['primary_category']})"
+            )
+    if trend:
+        series = trend.get("series", [])
+        if series:
+            start = series[0]["quarter"]
+            end = series[-1]["quarter"]
+            first_share = series[0]["share"]
+            last_share = series[-1]["share"]
+            evidence_lines.append(
+                f"Trend for {trend['label']}: share went from {first_share:.4f} "
+                f"({start}) to {last_share:.4f} ({end}); slope "
+                f"{trend['slope']:+.5f} per quarter (p={trend['p_value']:.4g})."
+            )
+
+    prompt = (
+        "Answer the user's question using only the evidence below. Cite papers "
+        "as [arXiv:ID]. If the evidence is insufficient, say so.\n\n"
+        f"Question: {state.get('question', '')}\n\n"
+        "Evidence:\n" + "\n".join(evidence_lines)
+    )
+    answer = ""
+    try:
+        answer = llm.llm_call(prompt, system="Be concise and grounded.")
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("synthesize_node LLM failed (%s)", exc)
+        answer = ""
+    if not answer or answer == getattr(llm, "CANNED_TEXT", None) or answer.startswith("STUB"):
+        parts = []
+        if docs:
+            parts.append(
+                "Found " + str(len(docs)) + " related papers: "
+                + ", ".join(d["title"] for d in docs[:3]) + "."
+            )
+        if trend:
+            series = trend.get("series", [])
+            if series:
+                parts.append(
+                    f"{trend['label']} changed from {series[0]['share']:.4f} "
+                    f"({series[0]['quarter']}) to {series[-1]['share']:.4f} "
+                    f"({series[-1]['quarter']}) (slope {trend['slope']:+.5f}/quarter)."
+                )
+        answer = " ".join(parts) if parts else "Not enough evidence to answer."
+
     return GraphState(
-        answer="STUB SYNTHESIS: retrieval and trend evidence go here.",
+        answer=answer,
         citations=citations,
         low_confidence=state.get("grade") == "no",
         llm_calls=_calls(state),
