@@ -245,9 +245,20 @@ def coherence_cv(
     """
     if hasattr(topic_words, "show_topic"):  # legacy Gensim model call
         return _coherence_cv_lda(topic_words, tokenized_texts, dct, topn=topn)
-    logger.warning("STUB: coherence_cv")
-    # TODO(Ibraheem): implement c_v over topic_words and tokenized_texts.
-    return 0.0
+    if dct is None:
+        dct = Dictionary(tokenized_texts)
+    # processes=1 avoids copying the 119,919-document token lists into every
+    # worker; the score is identical for either model and both use the same
+    # tokenized_texts, so the comparison is fair.
+    cm = CoherenceModel(
+        topics=list(topic_words),
+        texts=tokenized_texts,
+        dictionary=dct,
+        coherence="c_v",
+        topn=topn,
+        processes=1,
+    )
+    return float(cm.get_coherence())
 
 
 def label_topics(topic_words: list[list[str]]) -> dict[int, str]:
