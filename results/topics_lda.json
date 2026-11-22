@@ -1,0 +1,329 @@
+{
+  "model": "gensim LDA",
+  "k": 20,
+  "seed": 42,
+  "c_v": 0.5605,
+  "outlier_share": 0.0,
+  "topics": [
+    {
+      "topic_id": 0,
+      "label": "Agent / Learning / Bias",
+      "top_words": [
+        "agent",
+        "learning",
+        "bias",
+        "reinforcement",
+        "environment",
+        "learn",
+        "social",
+        "policy",
+        "human",
+        "fairness"
+      ]
+    },
+    {
+      "topic_id": 1,
+      "label": "Image / Pose / Reconstruction",
+      "top_words": [
+        "image",
+        "pose",
+        "reconstruction",
+        "view",
+        "shape",
+        "estimation",
+        "quality",
+        "human",
+        "feature",
+        "high"
+      ]
+    },
+    {
+      "topic_id": 2,
+      "label": "Detection / Object / Segmentation",
+      "top_words": [
+        "detection",
+        "object",
+        "segmentation",
+        "point",
+        "feature",
+        "cloud",
+        "image",
+        "semantic",
+        "anomaly",
+        "detector"
+      ]
+    },
+    {
+      "topic_id": 3,
+      "label": "Network / Neural / Layer",
+      "top_words": [
+        "network",
+        "neural",
+        "layer",
+        "architecture",
+        "feature",
+        "attention",
+        "memory",
+        "accuracy",
+        "efficient",
+        "deep"
+      ]
+    },
+    {
+      "topic_id": 4,
+      "label": "Temporal / Scene / Motion",
+      "top_words": [
+        "temporal",
+        "scene",
+        "motion",
+        "event",
+        "depth",
+        "view",
+        "spatial",
+        "camera",
+        "dynamic",
+        "multi"
+      ]
+    },
+    {
+      "topic_id": 5,
+      "label": "Graph / Network / Neural",
+      "top_words": [
+        "graph",
+        "network",
+        "neural",
+        "learning",
+        "node",
+        "learn",
+        "structure",
+        "deep",
+        "representation",
+        "datum"
+      ]
+    },
+    {
+      "topic_id": 6,
+      "label": "Adversarial / Attack / Privacy",
+      "top_words": [
+        "adversarial",
+        "attack",
+        "privacy",
+        "robustness",
+        "training",
+        "learning",
+        "datum",
+        "client",
+        "federated",
+        "perturbation"
+      ]
+    },
+    {
+      "topic_id": 7,
+      "label": "Domain / Knowledge / Learning",
+      "top_words": [
+        "domain",
+        "knowledge",
+        "learning",
+        "transfer",
+        "target",
+        "adaptation",
+        "feature",
+        "distillation",
+        "learn",
+        "source"
+      ]
+    },
+    {
+      "topic_id": 8,
+      "label": "Video / Recognition / Face",
+      "top_words": [
+        "video",
+        "recognition",
+        "face",
+        "action",
+        "image",
+        "facial",
+        "gan",
+        "frame",
+        "generate",
+        "ood"
+      ]
+    },
+    {
+      "topic_id": 9,
+      "label": "Question / Answer / Reasoning",
+      "top_words": [
+        "question",
+        "answer",
+        "reasoning",
+        "evaluation",
+        "human",
+        "generate",
+        "knowledge",
+        "document",
+        "metric",
+        "summarization"
+      ]
+    },
+    {
+      "topic_id": 10,
+      "label": "User / Dialogue / System",
+      "top_words": [
+        "user",
+        "dialogue",
+        "system",
+        "response",
+        "conversation",
+        "search",
+        "context",
+        "conversational",
+        "query",
+        "intent"
+      ]
+    },
+    {
+      "topic_id": 11,
+      "label": "Datum / Training / Label",
+      "top_words": [
+        "datum",
+        "training",
+        "label",
+        "learning",
+        "sample",
+        "data",
+        "class",
+        "classification",
+        "learn",
+        "distribution"
+      ]
+    },
+    {
+      "topic_id": 12,
+      "label": "Language / Translation / Text",
+      "top_words": [
+        "language",
+        "translation",
+        "text",
+        "speech",
+        "resource",
+        "multilingual",
+        "english",
+        "datum",
+        "machine",
+        "large"
+      ]
+    },
+    {
+      "topic_id": 13,
+      "label": "Image / Medical / Clinical",
+      "top_words": [
+        "image",
+        "medical",
+        "clinical",
+        "learning",
+        "datum",
+        "deep",
+        "segmentation",
+        "patient",
+        "classification",
+        "disease"
+      ]
+    },
+    {
+      "topic_id": 14,
+      "label": "Image / Text / Generation",
+      "top_words": [
+        "image",
+        "text",
+        "generation",
+        "diffusion",
+        "semantic",
+        "visual",
+        "generate",
+        "information",
+        "representation",
+        "knowledge"
+      ]
+    },
+    {
+      "topic_id": 15,
+      "label": "Algorithm / Learning / Optimization",
+      "top_words": [
+        "algorithm",
+        "learning",
+        "optimization",
+        "function",
+        "distribution",
+        "gradient",
+        "policy",
+        "optimal",
+        "sample",
+        "learn"
+      ]
+    },
+    {
+      "topic_id": 16,
+      "label": "Language / Llms / Llm",
+      "top_words": [
+        "language",
+        "llms",
+        "llm",
+        "large",
+        "prompt",
+        "fine",
+        "training",
+        "pre",
+        "tuning",
+        "token"
+      ]
+    },
+    {
+      "topic_id": 17,
+      "label": "Datum / Prediction / Learning",
+      "top_words": [
+        "datum",
+        "prediction",
+        "learning",
+        "research",
+        "machine",
+        "time",
+        "application",
+        "system",
+        "challenge",
+        "analysis"
+      ]
+    },
+    {
+      "topic_id": 18,
+      "label": "Self / Learning / Supervise",
+      "top_words": [
+        "self",
+        "learning",
+        "supervise",
+        "attention",
+        "label",
+        "representation",
+        "supervised",
+        "contrastive",
+        "datum",
+        "transformer"
+      ]
+    },
+    {
+      "topic_id": 19,
+      "label": "Language / Word / Analysis",
+      "top_words": [
+        "language",
+        "word",
+        "analysis",
+        "sentiment",
+        "bias",
+        "human",
+        "sentence",
+        "text",
+        "linguistic",
+        "find"
+      ]
+    }
+  ]
+}

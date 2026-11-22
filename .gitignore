@@ -18,6 +18,8 @@ results/*
 !results/label_classes.json
 !results/embeddings_check.json
 !results/topic_share_dummy.csv
+!results/topics_lda.json
+!results/topics_bertopic.json
 !results/uncapped_counts.csv
 !results/uncapped_counts_by_year.csv
 !results/uncapped_counts_pivot.csv
