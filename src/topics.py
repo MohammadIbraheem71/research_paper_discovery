@@ -126,10 +126,31 @@ def run_lda(texts: list[str], k: int = 20, seed: int = 42) -> dict:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: run_lda")
-    # TODO(Ibraheem): reuse load_tokens/build_corpus/train_lda above; persist the
-    # model and return its top words per topic.
-    return {"k": k, "seed": seed, "topic_words": [["stub"] * 5 for _ in range(k)], "model_path": ""}
+    from src.settings_p2 import CACHE_DIR
+
+    tokens = [t.split() for t in texts]
+    dct, corpus = build_corpus(tokens)
+    # workers is a resource setting only: 4 keeps peak RSS bounded on the
+    # 119,919-document corpus. Model parameters (k, passes, seed) are unchanged.
+    model = train_lda(corpus, dct, k, passes=5, workers=4)
+    topic_words = [
+        [word for word, _ in model.show_topic(t, topn=10)] for t in range(k)
+    ]
+    doc_topics = []
+    for bow in corpus:
+        dist = model.get_document_topics(bow, minimum_probability=0.0)
+        doc_topics.append(int(max(dist, key=lambda x: x[1])[0]) if dist else -1)
+
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    model_path = CACHE_DIR / "lda_model"
+    model.save(str(model_path))
+    return {
+        "k": k,
+        "seed": seed,
+        "topic_words": topic_words,
+        "doc_topics": doc_topics,
+        "model_path": str(model_path),
+    }
 
 
 def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") -> dict:
