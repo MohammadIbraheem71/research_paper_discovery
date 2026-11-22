@@ -35,10 +35,44 @@ def compute_topic_share(doc_topics_df: pd.DataFrame) -> pd.DataFrame:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: compute_topic_share")
-    # TODO(Ibraheem): group by (quarter, topic_id), count papers, divide by the
-    # quarterly total and join the topic labels. Until then return dummy rows.
-    return _load_dummy_share()
+    import json
+
+    from src.settings_p2 import ROOT
+
+    if "quarter" not in doc_topics_df or "bertopic_topic" not in doc_topics_df:
+        raise ValueError("doc_topics_df must have 'quarter' and 'bertopic_topic' columns")
+    if doc_topics_df.empty:
+        raise ValueError("doc_topics_df is empty; real topic assignments are required")
+
+    # Outlier topic -1 is excluded from the numerator: HDBSCAN could not assign
+    # those papers, so they must not be counted as a topic. They DO remain in
+    # the quarterly denominator, which is all papers in that quarter.
+    assigned = doc_topics_df[doc_topics_df["bertopic_topic"] != -1]
+    quarterly_total = doc_topics_df.groupby("quarter").size().rename("quarter_total")
+    counts = (
+        assigned.groupby(["quarter", "bertopic_topic"]).size().rename("count").reset_index()
+        .rename(columns={"bertopic_topic": "topic_id"})
+        .join(quarterly_total, on="quarter")
+    )
+    counts["share"] = counts["count"] / counts["quarter_total"]
+
+    labels: dict[int, str] = {}
+    if "label" in assigned:
+        labels = dict(zip(assigned["topic_id"], assigned["label"])) if "topic_id" in assigned else {}
+    if not labels:
+        path = ROOT / "results" / "topics_bertopic.json"
+        if path.exists():
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            labels = {int(t["topic_id"]): t["label"] for t in payload["topics"]}
+    counts["label"] = counts["topic_id"].map(labels).fillna(
+        counts["topic_id"].map(lambda t: f"Topic {t}")
+    )
+    out = counts[["quarter", "topic_id", "label", "share", "count"]].sort_values(
+        ["quarter", "topic_id"]
+    ).reset_index(drop=True)
+    out["topic_id"] = out["topic_id"].astype(int)
+    out["count"] = out["count"].astype(int)
+    return out
 
 
 def fit_slopes(share_df: pd.DataFrame) -> pd.DataFrame:
