@@ -207,7 +207,25 @@ def plot_topic_trend(trend_data: TrendData) -> str:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: plot_topic_trend")
-    # TODO(Ibraheem): plot the series to results/topic_trend.png under a results/
-    # subpath that is gitignored, and return the actual path written.
-    return str(Path("results") / "topic_trend_dummy.png")
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from src.settings_p2 import ROOT
+
+    out_dir = ROOT / "results" / "trends"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"topic_trend_{trend_data['topic_id']}.png"
+    quarters = [point["quarter"] for point in trend_data["series"]]
+    shares = [point["share"] for point in trend_data["series"]]
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(quarters, shares, marker="o", linewidth=1.5)
+    ax.set_title(f"{trend_data['label']} — quarterly share")
+    ax.set_ylabel("share of papers")
+    ax.set_xlabel("quarter")
+    ax.grid(alpha=0.3)
+    fig.autofmt_xdate(rotation=60)
+    fig.tight_layout()
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    return str(path)
