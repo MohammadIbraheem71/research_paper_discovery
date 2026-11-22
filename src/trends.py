@@ -89,15 +89,26 @@ def fit_slopes(share_df: pd.DataFrame) -> pd.DataFrame:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: fit_slopes")
-    # TODO(Ibraheem): regress share on a numeric quarter index per topic using
-    # scipy.stats.linregress; keep only topics with enough quarters.
-    return pd.DataFrame(
-        [
-            {"topic_id": i, "label": f"Topic {i}", "slope": 0.01 * (2 - i), "p_value": 0.01 * (i + 1)}
-            for i in range(5)
-        ]
-    )
+    from scipy.stats import linregress
+
+    def quarter_index(q: str) -> int:
+        year, quarter = str(q).split("Q")
+        return int(year) * 4 + int(quarter) - 1
+
+    rows = []
+    for topic_id, group in share_df.groupby("topic_id"):
+        g = group.sort_values("quarter")
+        if len(g) < 3:
+            continue
+        x = [quarter_index(q) for q in g["quarter"]]
+        fit = linregress(x, g["share"].astype(float).tolist())
+        rows.append({
+            "topic_id": int(topic_id),
+            "label": str(g["label"].iloc[0]),
+            "slope": float(fit.slope),
+            "p_value": float(fit.pvalue),
+        })
+    return pd.DataFrame(rows, columns=["topic_id", "label", "slope", "p_value"])
 
 
 def rising_declining(slopes: pd.DataFrame, n: int = 5) -> tuple[list, list]:
