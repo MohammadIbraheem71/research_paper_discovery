@@ -124,9 +124,9 @@ def rising_declining(slopes: pd.DataFrame, n: int = 5) -> tuple[list, list]:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: rising_declining")
-    # TODO(Ibraheem): sort by slope and take the top n and bottom n ids.
-    ordered = slopes.sort_values("slope", ascending=False)["topic_id"].tolist()
+    ordered = slopes.sort_values(
+        ["slope", "topic_id"], ascending=[False, True]
+    )["topic_id"].tolist()
     return ordered[:n], ordered[-n:][::-1]
 
 
