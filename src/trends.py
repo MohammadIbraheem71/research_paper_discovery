@@ -144,22 +144,53 @@ def trend_lookup(question: str, share_df: pd.DataFrame) -> TrendData:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: trend_lookup")
-    # TODO(Ibraheem): match topic labels in the question, otherwise pick the
-    # strongest slope from fit_slopes(); assemble a real TrendData.
-    rows = share_df[share_df["topic_id"] == 0]
+    import re
+    from difflib import SequenceMatcher
+
+    slopes = fit_slopes(share_df)
+    if slopes.empty:
+        raise ValueError("No topic slopes available from share_df")
+
+    # Fuzzy match: word overlap plus difflib.SequenceMatcher ratio against each
+    # topic label. If no label matches at all, use the strongest rising slope.
+    question_lower = question.lower()
+    question_words = set(re.findall(r"[a-z]+", question_lower))
+    best_score, chosen = -1.0, None
+    for row in slopes.itertuples(index=False):
+        label = str(row.label).lower()
+        label_words = set(re.findall(r"[a-z]+", label))
+        score = len(question_words & label_words) + SequenceMatcher(None, question_lower, label).ratio()
+        if score > best_score:
+            best_score, chosen = score, row
+    if best_score <= 0:
+        chosen = slopes.loc[slopes["slope"].idxmax()]
+
+    rows = share_df[share_df["topic_id"] == int(chosen.topic_id)].sort_values("quarter")
+    quarter_tags = re.findall(r"\b(20\d{2})Q([1-4])\b", question, flags=re.IGNORECASE)
+    if not quarter_tags:
+        years = [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", question)]
+    else:
+        years = [int(y) for y, _ in quarter_tags]
+    if years:
+        lo, hi = min(years), max(years)
+        filtered = rows[rows["quarter"].str[:4].astype(int).between(lo, hi)]
+        if not filtered.empty:
+            rows = filtered
+
     series: list[TrendPoint] = [
         TrendPoint(quarter=str(r.quarter), share=float(r.share), count=int(r.count))
         for r in rows.itertuples()
     ]
+    if not series:
+        raise ValueError("Time range in question produced an empty trend series")
     return TrendData(
-        topic_id=0,
-        label="Topic 0",
+        topic_id=int(chosen.topic_id),
+        label=str(chosen.label),
         start_quarter=series[0]["quarter"],
         end_quarter=series[-1]["quarter"],
         series=series,
-        slope=0.01,
-        p_value=0.01,
+        slope=float(chosen.slope),
+        p_value=float(chosen.p_value),
         chart_path=None,
     )
 
