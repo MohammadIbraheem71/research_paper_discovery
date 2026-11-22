@@ -174,8 +174,9 @@ def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") ->
 
     from src.settings_p2 import CACHE_DIR
 
-    # UMAP/HDBSCAN settings are the standard BERTopic defaults; random_state
-    # makes the projection reproducible and low_memory bounds peak RSS.
+    # UMAP/HDBSCAN settings are the standard BERTopic defaults; UMAP's fixed
+    # random_state makes the projection reproducible. BERTopic 0.17.4 has no
+    # random_state argument, so its low_memory flag bounds peak RSS instead.
     umap_model = umap.UMAP(
         n_neighbors=15,
         n_components=5,
@@ -194,7 +195,7 @@ def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") ->
         umap_model=umap_model,
         hdbscan_model=hdbscan_model,
         nr_topics=nr_topics,
-        random_state=42,
+        low_memory=True,
         calculate_probabilities=False,
         verbose=True,
     )
