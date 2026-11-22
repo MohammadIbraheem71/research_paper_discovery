@@ -235,6 +235,7 @@ def trend_lookup_node(state: GraphState) -> GraphState:
     else:
         share_df = trends._load_dummy_share()
     trend_data = trends.trend_lookup(state.get("question") or "", share_df)
+    trend_data["chart_path"] = trends.plot_topic_trend(trend_data)
     # Do not write llm_calls here: on the hybrid path this node runs in parallel
     # with query_rewrite_node, which owns that key in the same superstep.
     return GraphState(trend_data=trend_data)
