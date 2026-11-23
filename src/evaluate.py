@@ -7,9 +7,13 @@ the remaining functions are offline stubs.
 from __future__ import annotations
 
 import logging
+import json
 from pathlib import Path
+import uuid
 
 import pandas as pd
+
+from src.settings_p2 import EVAL_RETRIEVAL_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -92,14 +96,52 @@ def run_ablation(questions: list[str]) -> pd.DataFrame:
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: run_ablation")
-    # TODO(Aliyan): replay each question through build_graph() with components
-    # disabled and score with hit_rate_at_k/mrr.
+    from src import rag
+    from src.graph import build_graph
+
+    gold_by_question: dict[str, list[str]] = {}
+    if EVAL_RETRIEVAL_PATH.exists():
+        for item in json.loads(EVAL_RETRIEVAL_PATH.read_text(encoding="utf-8")):
+            gold_by_question[str(item.get("question", ""))] = list(
+                item.get("relevant_ids", [])
+            )
+
+    rows: list[dict] = []
+    for question in questions:
+        gold = gold_by_question.get(question, [])
+
+        graph_state = build_graph().invoke(
+            {
+                "question": question,
+                "thread_id": f"ablation-with-{uuid.uuid4()}",
+                "retry_count": 0,
+                "llm_calls": 0,
+            }
+        )
+        with_ids = [doc["arxiv_id"] for doc in graph_state.get("docs", [])]
+        rr = mrr([with_ids], [gold]) if gold else 0.0
+        rows.append({
+            "question": question,
+            "variant": "with rewrite+grade",
+            "hit@5": hit_rate_at_k([with_ids], [gold], 5) if gold else 0.0,
+            "rr": rr,
+            "llm_calls": int(graph_state.get("llm_calls", 0)),
+        })
+
+        without_ids = [
+            doc["arxiv_id"]
+            for doc in rag.retrieve(question, k=5)
+        ]
+        rr = mrr([without_ids], [gold]) if gold else 0.0
+        rows.append({
+            "question": question,
+            "variant": "without rewrite+grade",
+            "hit@5": hit_rate_at_k([without_ids], [gold], 5) if gold else 0.0,
+            "rr": rr,
+            "llm_calls": 0,
+        })
     return pd.DataFrame(
-        [
-            {"question": q, "variant": "stub", "hit@5": 0.0, "rr": 0.0, "llm_calls": 0}
-            for q in questions
-        ],
+        rows,
         columns=["question", "variant", "hit@5", "rr", "llm_calls"],
     )
 
@@ -117,7 +159,48 @@ def citation_sample_csv(n: int = 20, path: str | Path = "eval/citation_sample.cs
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: citation_sample_csv")
-    # TODO(Aliyan): sample n citations with question/answer/arxiv_id/title columns
-    # and write them to path for hand labelling.
-    return str(path)
+    from src import rag
+
+    destination = Path(path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    rows: list[dict] = []
+    if not EVAL_RETRIEVAL_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing retrieval evaluation file: {EVAL_RETRIEVAL_PATH}"
+        )
+    eval_items = json.loads(EVAL_RETRIEVAL_PATH.read_text(encoding="utf-8"))
+    sampled = eval_items[:n]
+    for item in sampled:
+        question = str(item.get("question", "")).strip()
+        filters = item.get("filters", {})
+        docs = rag.retrieve(
+            question,
+            k=5,
+            year_min=filters.get("year_min"),
+            year_max=filters.get("year_max"),
+            category=filters.get("category"),
+            topic=filters.get("topic"),
+        )
+        answer, citations = rag.generate_answer(question, docs)
+        if citations:
+            for citation in citations:
+                rows.append({
+                    "question": question,
+                    "answer": answer,
+                    "arxiv_id": citation["arxiv_id"],
+                    "title": citation["title"],
+                    "supported?": "",
+                })
+        else:
+            rows.append({
+                "question": question,
+                "answer": answer,
+                "arxiv_id": "",
+                "title": "",
+                "supported?": "",
+            })
+    pd.DataFrame(
+        rows,
+        columns=["question", "answer", "arxiv_id", "title", "supported?"],
+    ).to_csv(destination, index=False)
+    return str(destination)
