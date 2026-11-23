@@ -306,8 +306,6 @@ def retrieve_node(state: GraphState) -> GraphState:
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: retrieve_node")
-    # TODO(Aliyan): call rag.retrieve(**filters) with state["rewritten_query"].
     filters = state.get("filters", {})
     docs = rag.retrieve(
         state.get("rewritten_query") or state.get("question") or "",
