@@ -1,34 +1,45 @@
 [
-  {
-    "question": "Find recent papers about graph neural networks for molecules",
-    "route": "literature"
-  },
-  {
-    "question": "Which arXiv papers cite the original transformer paper?",
-    "route": "literature"
-  },
-  {
-    "question": "How has the share of NLP papers changed over time?",
-    "route": "trend"
-  },
-  {
-    "question": "Which computer vision topics are growing quarter by quarter?",
-    "route": "trend"
-  },
-  {
-    "question": "Show papers about CLIP and how their topic share trends over time",
-    "route": "hybrid"
-  },
-  {
-    "question": "Find related work on retrieval augmentation and describe its growing popularity over time",
-    "route": "hybrid"
-  },
-  {
-    "question": "What is the weather in Cairo tomorrow?",
-    "route": "fallback"
-  },
-  {
-    "question": "Hello",
-    "route": "fallback"
-  }
+  {"question": "Find recent papers on graph neural networks for molecule property prediction", "route": "literature"},
+  {"question": "Show me papers about attention mechanisms in transformers", "route": "literature"},
+  {"question": "Summarize the literature on low-resource machine translation", "route": "literature"},
+  {"question": "Which arXiv papers discuss self-supervised image representation learning?", "route": "literature"},
+  {"question": "Find related work on diffusion models for text-to-image generation", "route": "literature"},
+  {"question": "List papers on federated learning with differential privacy", "route": "literature"},
+  {"question": "Recommend papers about reinforcement learning from human feedback", "route": "literature"},
+  {"question": "What papers exist on named entity recognition for low-resource languages?", "route": "literature"},
+  {"question": "Find studies on 3D object detection from point clouds", "route": "literature"},
+  {"question": "Show papers about contrastive learning for sentence embeddings", "route": "literature"},
+
+  {"question": "How has the share of NLP papers changed over time?", "route": "trend"},
+  {"question": "Which computer vision topics are growing quarter by quarter?", "route": "trend"},
+  {"question": "Has interest in graph neural networks been rising or declining?", "route": "trend"},
+  {"question": "Track the popularity of diffusion models over the years", "route": "trend"},
+  {"question": "Show the quarterly trend of federated learning papers", "route": "trend"},
+  {"question": "How did the volume of reinforcement learning papers change from 2018 to 2024?", "route": "trend"},
+  {"question": "Which topics in machine learning are declining over time?", "route": "trend"},
+  {"question": "Plot the share of vision-language models by quarter", "route": "trend"},
+  {"question": "Are transformer papers becoming more popular over time?", "route": "trend"},
+  {"question": "Show the growth of self-supervised learning publications over time", "route": "trend"},
+
+  {"question": "Show papers about CLIP and how their topic share trends over time", "route": "hybrid"},
+  {"question": "Find related work on retrieval augmentation and describe its growing popularity over time", "route": "hybrid"},
+  {"question": "Papers on diffusion models and how their share changed over time", "route": "hybrid"},
+  {"question": "Show me papers about graph neural networks and how their popularity trended", "route": "hybrid"},
+  {"question": "Find federated learning papers and track their quarterly share", "route": "hybrid"},
+  {"question": "List transformer papers and how their share of publications changed over time", "route": "hybrid"},
+  {"question": "Show papers on self-supervised learning and their trend over time", "route": "hybrid"},
+  {"question": "Find reinforcement learning papers and how their popularity grew", "route": "hybrid"},
+  {"question": "Papers about contrastive learning and their trend over time", "route": "hybrid"},
+  {"question": "Show machine translation papers and how their share changed over time", "route": "hybrid"},
+
+  {"question": "What is the weather tomorrow?", "route": "fallback"},
+  {"question": "Hello", "route": "fallback"},
+  {"question": "Tell me a joke", "route": "fallback"},
+  {"question": "Who won the football match yesterday?", "route": "fallback"},
+  {"question": "How do I cook pasta?", "route": "fallback"},
+  {"question": "What is the capital of France?", "route": "fallback"},
+  {"question": "Translate hello to Spanish", "route": "fallback"},
+  {"question": "Write a poem about the ocean", "route": "fallback"},
+  {"question": "What time is it?", "route": "fallback"},
+  {"question": "Explain quantum physics simply", "route": "fallback"}
 ]

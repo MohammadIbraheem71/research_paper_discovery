@@ -78,9 +78,34 @@ def router_accuracy(preds: list[str], labels: list[str]) -> dict:
     Owner:
         Sohaib.
     """
-    logger.warning("STUB: router_accuracy")
-    # TODO(Sohaib): compute accuracy and a nested route -> route -> count dict.
-    return {"accuracy": 0.0, "confusion": {}}
+    if len(preds) != len(labels):
+        raise ValueError(
+            f"router_accuracy: preds ({len(preds)}) and labels ({len(labels)}) "
+            "must have the same length"
+        )
+    if not labels:
+        canonical = ["literature", "trend", "hybrid", "fallback"]
+        return {
+            "accuracy": 0.0,
+            "confusion": {r: {c: 0 for c in canonical} for r in canonical},
+        }
+
+    canonical = ["literature", "trend", "hybrid", "fallback"]
+    observed = sorted(set(labels) | set(preds))
+    routes = [r for r in canonical if r in observed] + [
+        r for r in observed if r not in canonical
+    ]
+    confusion = {r: {c: 0 for c in routes} for r in routes}
+    correct = 0
+    for pred, gold in zip(preds, labels):
+        confusion.setdefault(gold, {c: 0 for c in routes})
+        confusion[gold][pred] = confusion[gold].get(pred, 0) + 1
+        if pred == gold:
+            correct += 1
+    return {
+        "accuracy": correct / len(labels),
+        "confusion": confusion,
+    }
 
 
 def run_ablation(questions: list[str]) -> pd.DataFrame:

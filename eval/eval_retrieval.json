@@ -1,12 +1,21 @@
 [
   {
-    "question": "Find papers about low-resource machine translation between 2020 and 2023",
+    "question": "Find papers about low-resource machine translation",
     "filters": {
       "year_min": 2020,
       "year_max": 2023,
       "category": "cs.CL"
     },
-    "relevant_ids": [],
+    "relevant_ids": [
+      "2110.00435",
+      "2009.09359",
+      "2011.05284",
+      "2202.13274",
+      "2204.04344",
+      "2306.07414",
+      "2311.00998",
+      "2103.13272"
+    ],
     "needs_human_verification": true
   },
   {
@@ -15,7 +24,16 @@
       "year_min": 2022,
       "category": "cs.CV"
     },
-    "relevant_ids": [],
+    "relevant_ids": [
+      "2210.07372",
+      "2309.08932",
+      "2407.18232",
+      "2206.09474",
+      "2405.03884",
+      "2410.03918",
+      "2306.05663",
+      "2305.04925"
+    ],
     "needs_human_verification": true
   },
   {
@@ -25,7 +43,479 @@
       "year_max": 2024,
       "category": "cs.LG"
     },
-    "relevant_ids": [],
+    "relevant_ids": [
+      "2406.02594",
+      "2406.16321",
+      "2403.06017",
+      "2402.11641",
+      "2402.00447",
+      "2407.03125",
+      "2402.09676",
+      "2401.00755"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on diffusion models for image generation",
+    "filters": {
+      "year_min": 2021,
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2312.08873",
+      "2403.07860",
+      "2406.11138",
+      "2308.13164",
+      "2407.11664",
+      "2212.08228",
+      "2312.13253",
+      "2303.17905"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about reinforcement learning from human feedback",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2402.02423",
+      "2404.08555",
+      "2403.10704",
+      "2406.11715",
+      "2401.00243",
+      "2308.04332",
+      "2310.06147",
+      "2411.11761"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on federated learning and privacy",
+    "filters": {
+      "year_min": 2020,
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2409.18907",
+      "2407.09324",
+      "2405.10096",
+      "2402.01096",
+      "2107.01154",
+      "2402.00342",
+      "2311.18190",
+      "2209.14086"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about named entity recognition for low-resource languages",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2212.09723",
+      "1808.07582",
+      "2404.01914",
+      "2003.11530",
+      "2306.15736",
+      "2305.10647",
+      "2406.10671",
+      "2111.13833"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on semantic segmentation in images",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2102.10370",
+      "2308.13759",
+      "2408.16469",
+      "2207.03335",
+      "2208.01254",
+      "2207.04297",
+      "1912.11186",
+      "2309.00817"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about contrastive learning for representation learning",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2203.04298",
+      "2207.11996",
+      "2106.02466",
+      "2009.10273",
+      "2309.01101",
+      "2301.12104",
+      "2112.08733",
+      "2308.09296"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on question answering over documents",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2205.04040",
+      "2401.06400",
+      "2109.10604",
+      "2007.03875",
+      "2403.01395",
+      "2312.09781",
+      "2406.14732",
+      "2305.06897"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers on vision transformers for image classification",
+    "filters": {
+      "year_min": 2021,
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2209.15159",
+      "2309.12424",
+      "2211.10526",
+      "2309.14136",
+      "2205.09995",
+      "2306.10959",
+      "2209.05687",
+      "2303.12557"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers about knowledge distillation for neural networks",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2208.08741",
+      "2009.04120",
+      "2304.04615",
+      "2405.08019",
+      "1911.13019",
+      "2410.18588",
+      "2309.11446",
+      "2404.06170"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers on text summarization with transformers",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2306.01248",
+      "1812.02303",
+      "2301.07095",
+      "1904.00788",
+      "2409.02413",
+      "1805.01089",
+      "2209.10492",
+      "1809.10867"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on object tracking in video",
+    "filters": {
+      "year_min": 2020,
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2204.11410",
+      "2011.10875",
+      "2306.13074",
+      "2002.05583",
+      "2409.07904",
+      "2405.10439",
+      "2412.10861",
+      "2408.11463"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about adversarial robustness of deep networks",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "1909.02436",
+      "2111.01996",
+      "1904.13000",
+      "1905.01034",
+      "2102.11935",
+      "2410.08503",
+      "2206.03717",
+      "2207.04129"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on speech recognition and ASR",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2010.06030",
+      "2207.09078",
+      "2407.13982",
+      "2412.03075",
+      "2105.03842",
+      "2009.06487",
+      "2210.12921",
+      "1802.02607"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers on image super-resolution",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2305.05177",
+      "2408.06709",
+      "2411.16792",
+      "2303.06207",
+      "2112.02279",
+      "2310.11881",
+      "2206.08345",
+      "1904.07470"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers about graph neural networks for recommendation",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2205.10689",
+      "2310.11730",
+      "2105.02377",
+      "2412.08066",
+      "2001.09595",
+      "2211.06812",
+      "2404.14961",
+      "2101.04526"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers on machine translation evaluation metrics",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2202.11027",
+      "2006.06264",
+      "2305.14889",
+      "2008.12009",
+      "2212.10297",
+      "2210.13746",
+      "2306.13041",
+      "1906.09833"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on depth estimation from monocular images",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2306.05682",
+      "2303.05021",
+      "2407.08187",
+      "2210.16574",
+      "2406.04532",
+      "2203.10925",
+      "2412.03079",
+      "2412.14103"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about few-shot learning",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2004.11149",
+      "2106.12900",
+      "1909.07155",
+      "2410.02267",
+      "2306.05189",
+      "2111.15487",
+      "2208.08135",
+      "2110.03909"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on sentiment analysis of social media",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2302.04359",
+      "2104.14751",
+      "2008.11972",
+      "2306.08925",
+      "2409.17417",
+      "2405.13056",
+      "2211.09733",
+      "2010.02696"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about image captioning with attention",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2111.15015",
+      "2302.02124",
+      "1905.07841",
+      "1904.00767",
+      "2209.08231",
+      "1908.06954",
+      "1908.02923",
+      "1905.04016"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on natural language inference",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2406.17716",
+      "2201.05955",
+      "2010.05444",
+      "2209.13953",
+      "2404.08066",
+      "2305.03598",
+      "2004.03744",
+      "2204.03286"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about reinforcement learning for robotics",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "1910.08639",
+      "1907.00182",
+      "1803.07067",
+      "2405.01534",
+      "2001.00449",
+      "2109.09180",
+      "2203.05985",
+      "1904.07854"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on facial recognition and face verification",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2011.08809",
+      "2310.11295",
+      "2305.15270",
+      "2203.01800",
+      "2410.07757",
+      "2408.03499",
+      "2406.05434",
+      "2401.00551"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about document retrieval and ranking",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "1907.03224",
+      "2405.15028",
+      "2310.07712",
+      "2410.02642",
+      "2411.14483",
+      "2009.09132",
+      "1903.12542",
+      "2309.07606"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on neural architecture search",
+    "filters": {
+      "category": "cs.LG"
+    },
+    "relevant_ids": [
+      "2103.10584",
+      "2412.02196",
+      "2210.02959",
+      "2301.10879",
+      "2105.11694",
+      "2012.06138",
+      "2105.09356",
+      "2204.07615"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Show papers about optical character recognition",
+    "filters": {
+      "category": "cs.CV"
+    },
+    "relevant_ids": [
+      "2206.03001",
+      "2310.10050",
+      "2412.02592",
+      "2312.11812",
+      "2007.11462",
+      "2409.04117",
+      "2207.06695",
+      "2012.08096"
+    ],
+    "needs_human_verification": true
+  },
+  {
+    "question": "Find papers on dialogue systems and conversational agents",
+    "filters": {
+      "category": "cs.CL"
+    },
+    "relevant_ids": [
+      "2202.02912",
+      "2004.14307",
+      "2212.12652",
+      "2208.02462",
+      "2307.07255",
+      "1812.00350",
+      "2005.13804",
+      "2106.01666"
+    ],
     "needs_human_verification": true
   }
 ]

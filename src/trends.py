@@ -35,10 +35,44 @@ def compute_topic_share(doc_topics_df: pd.DataFrame) -> pd.DataFrame:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: compute_topic_share")
-    # TODO(Ibraheem): group by (quarter, topic_id), count papers, divide by the
-    # quarterly total and join the topic labels. Until then return dummy rows.
-    return _load_dummy_share()
+    import json
+
+    from src.settings_p2 import ROOT
+
+    if "quarter" not in doc_topics_df or "bertopic_topic" not in doc_topics_df:
+        raise ValueError("doc_topics_df must have 'quarter' and 'bertopic_topic' columns")
+    if doc_topics_df.empty:
+        raise ValueError("doc_topics_df is empty; real topic assignments are required")
+
+    # Outlier topic -1 is excluded from the numerator: HDBSCAN could not assign
+    # those papers, so they must not be counted as a topic. They DO remain in
+    # the quarterly denominator, which is all papers in that quarter.
+    assigned = doc_topics_df[doc_topics_df["bertopic_topic"] != -1]
+    quarterly_total = doc_topics_df.groupby("quarter").size().rename("quarter_total")
+    counts = (
+        assigned.groupby(["quarter", "bertopic_topic"]).size().rename("count").reset_index()
+        .rename(columns={"bertopic_topic": "topic_id"})
+        .join(quarterly_total, on="quarter")
+    )
+    counts["share"] = counts["count"] / counts["quarter_total"]
+
+    labels: dict[int, str] = {}
+    if "label" in assigned:
+        labels = dict(zip(assigned["topic_id"], assigned["label"])) if "topic_id" in assigned else {}
+    if not labels:
+        path = ROOT / "results" / "topics_bertopic.json"
+        if path.exists():
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            labels = {int(t["topic_id"]): t["label"] for t in payload["topics"]}
+    counts["label"] = counts["topic_id"].map(labels).fillna(
+        counts["topic_id"].map(lambda t: f"Topic {t}")
+    )
+    out = counts[["quarter", "topic_id", "label", "share", "count"]].sort_values(
+        ["quarter", "topic_id"]
+    ).reset_index(drop=True)
+    out["topic_id"] = out["topic_id"].astype(int)
+    out["count"] = out["count"].astype(int)
+    return out
 
 
 def fit_slopes(share_df: pd.DataFrame) -> pd.DataFrame:
@@ -55,15 +89,26 @@ def fit_slopes(share_df: pd.DataFrame) -> pd.DataFrame:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: fit_slopes")
-    # TODO(Ibraheem): regress share on a numeric quarter index per topic using
-    # scipy.stats.linregress; keep only topics with enough quarters.
-    return pd.DataFrame(
-        [
-            {"topic_id": i, "label": f"Topic {i}", "slope": 0.01 * (2 - i), "p_value": 0.01 * (i + 1)}
-            for i in range(5)
-        ]
-    )
+    from scipy.stats import linregress
+
+    def quarter_index(q: str) -> int:
+        year, quarter = str(q).split("Q")
+        return int(year) * 4 + int(quarter) - 1
+
+    rows = []
+    for topic_id, group in share_df.groupby("topic_id"):
+        g = group.sort_values("quarter")
+        if len(g) < 3:
+            continue
+        x = [quarter_index(q) for q in g["quarter"]]
+        fit = linregress(x, g["share"].astype(float).tolist())
+        rows.append({
+            "topic_id": int(topic_id),
+            "label": str(g["label"].iloc[0]),
+            "slope": float(fit.slope),
+            "p_value": float(fit.pvalue),
+        })
+    return pd.DataFrame(rows, columns=["topic_id", "label", "slope", "p_value"])
 
 
 def rising_declining(slopes: pd.DataFrame, n: int = 5) -> tuple[list, list]:
@@ -79,9 +124,9 @@ def rising_declining(slopes: pd.DataFrame, n: int = 5) -> tuple[list, list]:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: rising_declining")
-    # TODO(Ibraheem): sort by slope and take the top n and bottom n ids.
-    ordered = slopes.sort_values("slope", ascending=False)["topic_id"].tolist()
+    ordered = slopes.sort_values(
+        ["slope", "topic_id"], ascending=[False, True]
+    )["topic_id"].tolist()
     return ordered[:n], ordered[-n:][::-1]
 
 
@@ -99,22 +144,53 @@ def trend_lookup(question: str, share_df: pd.DataFrame) -> TrendData:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: trend_lookup")
-    # TODO(Ibraheem): match topic labels in the question, otherwise pick the
-    # strongest slope from fit_slopes(); assemble a real TrendData.
-    rows = share_df[share_df["topic_id"] == 0]
+    import re
+    from difflib import SequenceMatcher
+
+    slopes = fit_slopes(share_df)
+    if slopes.empty:
+        raise ValueError("No topic slopes available from share_df")
+
+    # Fuzzy match: word overlap plus difflib.SequenceMatcher ratio against each
+    # topic label. If no label matches at all, use the strongest rising slope.
+    question_lower = question.lower()
+    question_words = set(re.findall(r"[a-z]+", question_lower))
+    best_score, chosen = -1.0, None
+    for row in slopes.itertuples(index=False):
+        label = str(row.label).lower()
+        label_words = set(re.findall(r"[a-z]+", label))
+        score = len(question_words & label_words) + SequenceMatcher(None, question_lower, label).ratio()
+        if score > best_score:
+            best_score, chosen = score, row
+    if best_score <= 0:
+        chosen = slopes.loc[slopes["slope"].idxmax()]
+
+    rows = share_df[share_df["topic_id"] == int(chosen.topic_id)].sort_values("quarter")
+    quarter_tags = re.findall(r"\b(20\d{2})Q([1-4])\b", question, flags=re.IGNORECASE)
+    if not quarter_tags:
+        years = [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", question)]
+    else:
+        years = [int(y) for y, _ in quarter_tags]
+    if years:
+        lo, hi = min(years), max(years)
+        filtered = rows[rows["quarter"].str[:4].astype(int).between(lo, hi)]
+        if not filtered.empty:
+            rows = filtered
+
     series: list[TrendPoint] = [
         TrendPoint(quarter=str(r.quarter), share=float(r.share), count=int(r.count))
         for r in rows.itertuples()
     ]
+    if not series:
+        raise ValueError("Time range in question produced an empty trend series")
     return TrendData(
-        topic_id=0,
-        label="Topic 0",
+        topic_id=int(chosen.topic_id),
+        label=str(chosen.label),
         start_quarter=series[0]["quarter"],
         end_quarter=series[-1]["quarter"],
         series=series,
-        slope=0.01,
-        p_value=0.01,
+        slope=float(chosen.slope),
+        p_value=float(chosen.p_value),
         chart_path=None,
     )
 
@@ -131,7 +207,25 @@ def plot_topic_trend(trend_data: TrendData) -> str:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: plot_topic_trend")
-    # TODO(Ibraheem): plot the series to results/topic_trend.png under a results/
-    # subpath that is gitignored, and return the actual path written.
-    return str(Path("results") / "topic_trend_dummy.png")
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from src.settings_p2 import ROOT
+
+    out_dir = ROOT / "results" / "trends"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"topic_trend_{trend_data['topic_id']}.png"
+    quarters = [point["quarter"] for point in trend_data["series"]]
+    shares = [point["share"] for point in trend_data["series"]]
+    fig, ax = plt.subplots(figsize=(9, 4))
+    ax.plot(quarters, shares, marker="o", linewidth=1.5)
+    ax.set_title(f"{trend_data['label']} — quarterly share")
+    ax.set_ylabel("share of papers")
+    ax.set_xlabel("quarter")
+    ax.grid(alpha=0.3)
+    fig.autofmt_xdate(rotation=60)
+    fig.tight_layout()
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    return str(path)

@@ -126,10 +126,31 @@ def run_lda(texts: list[str], k: int = 20, seed: int = 42) -> dict:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: run_lda")
-    # TODO(Ibraheem): reuse load_tokens/build_corpus/train_lda above; persist the
-    # model and return its top words per topic.
-    return {"k": k, "seed": seed, "topic_words": [["stub"] * 5 for _ in range(k)], "model_path": ""}
+    from src.settings_p2 import CACHE_DIR
+
+    tokens = [t.split() for t in texts]
+    dct, corpus = build_corpus(tokens)
+    # workers is a resource setting only: 4 keeps peak RSS bounded on the
+    # 119,919-document corpus. Model parameters (k, passes, seed) are unchanged.
+    model = train_lda(corpus, dct, k, passes=5, workers=4)
+    topic_words = [
+        [word for word, _ in model.show_topic(t, topn=10)] for t in range(k)
+    ]
+    doc_topics = []
+    for bow in corpus:
+        dist = model.get_document_topics(bow, minimum_probability=0.0)
+        doc_topics.append(int(max(dist, key=lambda x: x[1])[0]) if dist else -1)
+
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    model_path = CACHE_DIR / "lda_model"
+    model.save(str(model_path))
+    return {
+        "k": k,
+        "seed": seed,
+        "topic_words": topic_words,
+        "doc_topics": doc_topics,
+        "model_path": str(model_path),
+    }
 
 
 def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") -> dict:
@@ -146,10 +167,61 @@ def run_bertopic(texts: list[str], embeddings, nr_topics: int | str = "auto") ->
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: run_bertopic")
-    # TODO(Ibraheem): fit bertopic.BERTopic(embedding_model=embeddings), reduce
-    # topics with nr_topics, and return top words plus a doc-topic array.
-    return {"nr_topics": 5, "topic_words": [["stub"] * 5 for _ in range(5)], "doc_topics": [0] * len(texts)}
+    import hdbscan
+    import numpy as np
+    import umap
+    from bertopic import BERTopic
+
+    from src.settings_p2 import CACHE_DIR
+
+    # UMAP/HDBSCAN settings are the standard BERTopic defaults; UMAP's fixed
+    # random_state makes the projection reproducible. BERTopic 0.17.4 has no
+    # random_state argument, so its low_memory flag bounds peak RSS instead.
+    umap_model = umap.UMAP(
+        n_neighbors=15,
+        n_components=5,
+        metric="cosine",
+        random_state=42,
+        low_memory=True,
+        n_jobs=4,
+    )
+    hdbscan_model = hdbscan.HDBSCAN(
+        min_cluster_size=50,
+        metric="euclidean",
+        cluster_selection_method="eom",
+    )
+    topic_model = BERTopic(
+        umap_model=umap_model,
+        hdbscan_model=hdbscan_model,
+        nr_topics=nr_topics,
+        low_memory=True,
+        calculate_probabilities=False,
+        # BERTopic 0.17.4 expects a model/string here, not an embedding array;
+        # the precomputed array is passed to fit_transform instead.
+        verbose=True,
+    )
+    doc_topics, _ = topic_model.fit_transform(list(texts), np.asarray(embeddings))
+    doc_topics = [int(t) for t in doc_topics]
+
+    topic_ids = [
+        int(t) for t in topic_model.get_topic_info()["Topic"] if int(t) != -1
+    ]
+    topic_words = [
+        [word for word, _ in topic_model.get_topic(t)[:10]] for t in topic_ids
+    ]
+
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    model_path = str(CACHE_DIR / "bertopic_model")
+    topic_model.save(model_path, serialization="pickle")
+
+    return {
+        "nr_topics": len(topic_ids),
+        "topic_ids": topic_ids,
+        "topic_words": topic_words,
+        "doc_topics": doc_topics,
+        "outlier_share": float(np.mean(np.array(doc_topics) == -1)),
+        "model_path": model_path,
+    }
 
 
 def coherence_cv(
@@ -175,9 +247,20 @@ def coherence_cv(
     """
     if hasattr(topic_words, "show_topic"):  # legacy Gensim model call
         return _coherence_cv_lda(topic_words, tokenized_texts, dct, topn=topn)
-    logger.warning("STUB: coherence_cv")
-    # TODO(Ibraheem): implement c_v over topic_words and tokenized_texts.
-    return 0.0
+    if dct is None:
+        dct = Dictionary(tokenized_texts)
+    # processes=1 avoids copying the 119,919-document token lists into every
+    # worker; the score is identical for either model and both use the same
+    # tokenized_texts, so the comparison is fair.
+    cm = CoherenceModel(
+        topics=list(topic_words),
+        texts=tokenized_texts,
+        dictionary=dct,
+        coherence="c_v",
+        topn=topn,
+        processes=1,
+    )
+    return float(cm.get_coherence())
 
 
 def label_topics(topic_words: list[list[str]]) -> dict[int, str]:
@@ -192,9 +275,18 @@ def label_topics(topic_words: list[list[str]]) -> dict[int, str]:
     Owner:
         Ibraheem.
     """
-    logger.warning("STUB: label_topics")
-    # TODO(Ibraheem): use an LLM or a top-word heuristic to name each topic.
-    return {i: f"Topic {i}" for i in range(len(topic_words))}
+    # Offline heuristic: the three most salient top words make a short,
+    # chart-friendly label. No LLM or API key is needed.
+    labels: dict[int, str] = {}
+    for i, words in enumerate(topic_words):
+        picked: list[str] = []
+        for word in words:
+            if word.lower() not in picked:
+                picked.append(word.lower())
+            if len(picked) == 3:
+                break
+        labels[i] = " / ".join(picked).title() if picked else f"Topic {i}"
+    return labels
 
 
 if __name__ == "__main__":
