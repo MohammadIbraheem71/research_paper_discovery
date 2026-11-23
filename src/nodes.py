@@ -131,9 +131,52 @@ def query_rewrite_node(state: GraphState) -> GraphState:
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: query_rewrite_node")
-    # TODO(Aliyan): call llm.llm_json to rewrite and optionally refine filters.
     question = state.get("question") or ""
+    if not question:
+        return GraphState(
+            rewritten_query="",
+            retry_count=state.get("retry_count", 0) + 1,
+            llm_calls=_calls(state),
+        )
+    system = (
+        "Rewrite the question as a concise retrieval query. "
+        "Return JSON with keys rewritten_query and filters. "
+        "filters may contain year_min, year_max, category, topic."
+    )
+    try:
+        from src.llm import llm_json
+
+        result = llm_json(
+            f"Question: {question}\nCurrent filters: {state.get('filters', {})}",
+            system=system,
+        )
+        rewritten = str(result.get("rewritten_query") or question).strip()
+        refined = result.get("filters")
+        updates: dict = {}
+        if isinstance(refined, dict):
+            filters = dict(state.get("filters", {}))
+            for key in ("year_min", "year_max", "topic"):
+                if key in refined:
+                    try:
+                        filters[key] = int(refined[key])
+                    except (TypeError, ValueError):
+                        pass
+            if isinstance(refined.get("category"), str):
+                filters["category"] = refined["category"]
+            updates["filters"] = filters
+        return GraphState(
+            rewritten_query=rewritten,
+            retry_count=state.get("retry_count", 0) + 1,
+            llm_calls=_calls(state),
+            **updates,
+        )
+    except Exception as exc:
+        logger.warning("Query rewrite unavailable: %s", exc)
+        return GraphState(
+            rewritten_query=question,
+            retry_count=state.get("retry_count", 0) + 1,
+            llm_calls=state.get("llm_calls", 0),
+        )
     return GraphState(
         rewritten_query=f"{question} (stub rewrite)".strip(),
         retry_count=state.get("retry_count", 0) + 1,
@@ -180,11 +223,33 @@ def grade_docs_node(state: GraphState) -> GraphState:
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: grade_docs_node")
-    # TODO(Aliyan): call llm.llm_json to grade relevance; keep the retry-test
-    # behaviour until the loop has a real grader to test against.
     question = (state.get("question") or "").lower()
-    grade = "no" if "retry-test" in question or not state.get("docs") else "yes"
+    docs = state.get("docs", [])
+    if "retry-test" in question:
+        grade = "no"
+    elif not docs:
+        grade = "no"
+    else:
+        system = (
+            "Grade whether the retrieved documents are relevant enough to answer "
+            "the question. Return JSON with exactly one key: grade, where grade "
+            "is \"yes\" or \"no\"."
+        )
+        doc_summary = "\n".join(
+            f"[arXiv:{doc['arxiv_id']}] {doc['title']}: {doc['abstract'][:500]}"
+            for doc in docs
+        )
+        try:
+            from src.llm import llm_json
+
+            result = llm_json(
+                f"Question: {state.get('question') or ''}\n\nDocuments:\n{doc_summary}",
+                system=system,
+            )
+            grade = "yes" if str(result.get("grade", "")).lower() == "yes" else "no"
+        except Exception as exc:
+            logger.warning("Document grading unavailable: %s", exc)
+            grade = "no"
     return GraphState(grade=grade, llm_calls=_calls(state))
 
 
@@ -201,8 +266,6 @@ def generate_answer_node(state: GraphState) -> GraphState:
     Owner:
         Aliyan.
     """
-    logger.warning("STUB: generate_answer_node")
-    # TODO(Aliyan): call rag.generate_answer() and set low_confidence from grade.
     answer, citations = rag.generate_answer(
         state.get("question") or "", state.get("docs", [])
     )
