@@ -10,17 +10,29 @@ from src.graph import run_question
 
 st.set_page_config(page_title="Research Paper Discovery", layout="wide")
 st.title("Research Paper Discovery and Trend Analysis")
-st.caption("Phase 2 skeleton - stub outputs until teammates implement the nodes.")
+st.caption("Retrieve arXiv literature and summarize topic trends.")
 
 question = st.text_input("Ask about cs.LG / cs.CL / cs.CV papers or their trends")
 if st.button("Ask") and question.strip():
-    state = run_question(question.strip(), thread_id="streamlit")
+    try:
+        with st.spinner("Searching and generating an answer..."):
+            state = run_question(question.strip(), thread_id="streamlit")
+    except Exception as exc:
+        st.error(f"Unable to answer the question: {type(exc).__name__}: {exc}")
+        st.stop()
     st.subheader("Route")
     st.write(state.get("route", "unknown"))
     st.subheader("Answer")
     st.write(state.get("answer", ""))
+    if state.get("low_confidence"):
+        st.warning("Low confidence: the retrieved evidence may not support this answer.")
     st.subheader("Citations")
-    st.write(state.get("citations", []))
+    citations = state.get("citations", [])
+    if citations:
+        for citation in citations:
+            st.markdown(f"- [arXiv:{citation['arxiv_id']}] {citation['title']}")
+    else:
+        st.write("No citations.")
     trend = state.get("trend_data")
     if trend:
         st.subheader("Trend")
