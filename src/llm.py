@@ -1,7 +1,8 @@
 """LLM access with a small on-disk cache and a retry/backoff seam.
 
-Owner: Aliyan. Stubs only: no API key or network access is needed to import or
-call these functions yet.
+Owner: Aliyan. Gemini uses google-genai; Groq uses chat-completions REST.
+Import needs no key; calls do. CANNED_* are legacy sentinels kept for downstream
+stub checks.
 """
 from __future__ import annotations
 
@@ -59,7 +60,7 @@ def call_with_retry(
         max_retries: Number of retries after the first attempt.
         backoff_seconds: Base delay, doubled after each failed attempt.
     Returns:
-        str, e.g. ``"STUB ANSWER: replace me with a real LLM call."``.
+        str: the provider completion text.
     Owner:
         Aliyan.
     """
@@ -96,21 +97,22 @@ def call_with_retry(
                     body = json.loads(response.read().decode("utf-8"))
                 text = body["choices"][0]["message"]["content"]
             else:
-                import google.generativeai as genai
+                from google import genai
+                from google.genai import types
 
-                genai.configure(api_key=gemini_key)
-                generation_config = (
-                    {"response_mime_type": "application/json"}
-                    if json_mode
-                    else None
+                client = genai.Client(
+                    api_key=gemini_key,
+                    http_options=types.HttpOptions(timeout=60_000),
                 )
-                model = genai.GenerativeModel(
-                    model_name=LLM_MODEL,
-                    system_instruction=system or None,
-                )
-                response = model.generate_content(
-                    prompt,
-                    generation_config=generation_config,
+                response = client.models.generate_content(
+                    model=LLM_MODEL,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system or None,
+                        response_mime_type=(
+                            "application/json" if json_mode else None
+                        ),
+                    ),
                 )
                 text = response.text
             path = _cache_path(prompt, system, json_mode)
@@ -134,7 +136,7 @@ def llm_call(prompt: str, system: str = "", json_mode: bool = False) -> str:
         system: Optional system instruction.
         json_mode: Ask the provider for JSON output; still returned as a string.
     Returns:
-        str, e.g. ``"STUB ANSWER: replace me with a real LLM call."``.
+        str: the provider completion text.
     Owner:
         Aliyan.
     """
@@ -161,7 +163,7 @@ def llm_json(prompt: str, system: str = "") -> dict:
         prompt: User prompt.
         system: Optional system instruction.
     Returns:
-        dict, e.g. ``{"answer": "STUB ...", "confidence": 0.0}``.
+        dict: the parsed JSON object returned by the provider.
     Owner:
         Aliyan.
     """
