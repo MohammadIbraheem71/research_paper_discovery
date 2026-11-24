@@ -15,10 +15,13 @@ import urllib.request
 
 from dotenv import load_dotenv
 
+# Load .env before settings_p2 reads LLM_MODEL, otherwise a notebook/import that
+# reaches settings_p2 first silently uses the retired default model.
+load_dotenv()
+
 from src.settings_p2 import CACHE_DIR, LLM_MODEL
 
 logger = logging.getLogger(__name__)
-load_dotenv()
 
 CANNED_TEXT = "STUB ANSWER: replace me with a real LLM call."
 CANNED_JSON: dict = {"answer": CANNED_TEXT, "confidence": 0.0}
