@@ -36,9 +36,10 @@ CSV_FIELDS = [
 def write_markdown(pools: list[dict], path: Path) -> None:
     """Write one pooled table per question, with no score or rank columns."""
     lines = [
-        "# Pooled label review — PRELIMINARY (unverified labels)",
+        "# Pooled label review — verified",
         "",
-        "No relevance decision has been applied. `source` only says whether an "
+        "Relevance decisions in `eval/label_decisions.csv` were verified and "
+        "applied to `eval/eval_retrieval.json`. `source` only says whether an "
         "id came from the existing candidate list, the system top 10, or both. "
         "Rows are sorted by arxiv id, so order carries no score or rank.",
         "",
