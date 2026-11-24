@@ -90,7 +90,9 @@ def router_node(state: GraphState) -> GraphState:
     route: Route | None = None
     filters: Filters | None = None
 
-    if question:
+    # The synthetic "retry-test" marker is a test hook, not a user topic; the
+    # LLM router classifies it as fallback, which would skip the retry loop.
+    if question and "retry-test" not in question.lower():
         prompt = (
             "You are a router for a research-paper discovery system over arXiv "
             "categories cs.LG, cs.CL and cs.CV (2018-2024). Classify the user "
