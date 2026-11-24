@@ -1,2 +1,2 @@
 label_status,n_questions,hit_rate_at_5,mrr,needs_human_verification
-PRELIMINARY (unverified labels),30,0.3667,0.1511,True
+verified,30,1.0,0.9567,False
