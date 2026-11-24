@@ -36,6 +36,9 @@
 | `get_checkpointer`, `build_graph`, `run_question` | `src/graph.py` | Ibraheem |
 | `hit_rate_at_k`, `mrr`, `run_ablation`, `citation_sample_csv` | `src/evaluate.py` | Aliyan |
 | `router_accuracy` | `src/evaluate.py` | Sohaib |
+| `question_id`, `load_eval_items`, `md_cell`, `build_pool` | `src/label_review.py` | Ibraheem |
+| `main` (pooled label-review generator) | `src/build_label_review.py` | Ibraheem |
+| `main` (human label application) | `src/apply_labels.py` | Ibraheem |
 | Streamlit shell | `app.py` | Aliyan |
 
 ## File ownership
@@ -49,4 +52,10 @@
 | `notebooks/00_kaggle_embeddings.ipynb` | Ibraheem (Phase 1) |
 | `eval/eval_routing.json` | Sohaib (hand labels) |
 | `eval/eval_retrieval.json` | Aliyan (hand labels) |
+| `results/label_review_pooled.md`, `eval/label_decisions.csv` | Ibraheem (generated; human-filled) |
 | `eval/README.md`, `OWNERS.md`, `README.md`, `tests/test_skeleton.py` | Ibraheem |
+| `src/label_review.py`, `src/build_label_review.py`, `src/apply_labels.py` | Ibraheem |
+
+`src/apply_labels.py` mechanically copies human decisions into
+`eval/eval_retrieval.json`. It never decides relevance and never edits a label
+itself.
