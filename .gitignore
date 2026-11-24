@@ -32,6 +32,7 @@ results/*
 !results/phase2_router_metrics.csv
 !results/phase2_router_confusion.csv
 !results/label_review.md
+!results/label_review_pooled.md
 
 # Python caches, notebook checkpoints, internal tooling, audit artifact
 __pycache__/
