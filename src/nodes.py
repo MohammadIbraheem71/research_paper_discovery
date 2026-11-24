@@ -107,6 +107,7 @@ def router_node(state: GraphState) -> GraphState:
             "Reply with JSON only: "
             '{"route": "<route>", "filters": {"year_min": ..., "year_max": ..., '
             '"category": ..., "topic": ...}}. Omit filter keys you are unsure about.'
+            f"\n\nQuestion: {question}"
         )
         try:
             payload = llm.llm_json(prompt, system="Return strict JSON only.")
