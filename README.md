@@ -347,8 +347,8 @@ under `results/`.
 ## Phase 2 architecture
 
 Phase 2 adds a four-route question-answering graph on top of the Phase 1 data and
-embeddings. All node bodies are currently offline stubs; see `OWNERS.md` for who
-implements which function. `src/contracts.py` is frozen and shared by everyone.
+embeddings; see `OWNERS.md` for module ownership. `src/contracts.py` is frozen and
+shared by everyone.
 
 ```mermaid
 flowchart TD
@@ -379,9 +379,35 @@ Module map:
 | `src/nodes.py`, `src/graph.py` | Graph nodes and the compiled LangGraph with SQLite checkpoints |
 | `src/evaluate.py`, `eval/` | Retrieval/router metrics and hand-labelled gold files |
 | `app.py` | Streamlit shell; starts without an API key |
-| `notebooks/05_*`–`10_*` | One notebook per workstream (not executed yet) |
+| `notebooks/05_*`–`10_*` | One notebook per workstream; `10_evaluation.ipynb` is executed with verified-label outputs |
 
-Run the offline skeleton tests from the repo root:
+### Verified Phase 2 evaluation
+
+The retrieval labels in `eval/label_decisions.csv` were reviewed and applied to
+`eval/eval_retrieval.json`; all 30 retrieval questions have
+`needs_human_verification: false`. The following values come from the executed
+`notebooks/10_evaluation.ipynb` and its committed result files.
+
+| Retrieval metric | Value |
+|---|---:|
+| Hit Rate@1 | 0.9333 |
+| Hit Rate@5 | 1.0 |
+| Hit Rate@10 | 1.0 |
+| MRR | 0.9567 |
+
+Ablation results (30 questions):
+
+| Variant | Hit Rate@5 | Mean RR | Avg LLM calls |
+|---|---:|---:|---:|
+| with rewrite+grade | 0.9 | 0.838889 | 4.2 |
+| without rewrite+grade | 1.0 | 0.898333 | 0.0 |
+
+Router accuracy from the same executed notebook is 1.0 on 40 questions. Detailed
+outputs are in `results/phase2_retrieval_metrics_at_k.csv`,
+`results/phase2_ablation.csv`, `results/phase2_ablation_questions.csv`,
+`results/phase2_router_metrics.csv`, and `notebooks/10_evaluation.ipynb`.
+
+Run the tests from the repo root:
 
 ```bash
 python -m pip install -r requirements.txt
