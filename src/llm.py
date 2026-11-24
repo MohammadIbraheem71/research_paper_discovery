@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import threading
 import time
 from pathlib import Path
 import os
@@ -23,6 +24,13 @@ load_dotenv()
 from src.settings_p2 import CACHE_DIR, LLM_MODEL
 
 logger = logging.getLogger(__name__)
+
+# Groq free tier allows 8,000 tokens/minute. Pace requests by a conservative
+# token estimate so a long ablation does not spend the whole run on 429s.
+_RATE_LOCK = threading.Lock()
+_RATE_WINDOW_START = time.monotonic()
+_RATE_TOKENS = 0
+_RATE_TOKEN_BUDGET = 7_800
 
 CANNED_TEXT = "STUB ANSWER: replace me with a real LLM call."
 CANNED_JSON: dict = {"answer": CANNED_TEXT, "confidence": 0.0}
@@ -65,6 +73,7 @@ def call_with_retry(
         Aliyan.
     """
     """Call a configured Gemini or Groq provider with exponential backoff."""
+    global _RATE_WINDOW_START, _RATE_TOKENS
     for attempt in range(max_retries + 1):
         try:
             gemini_key = os.getenv("GEMINI_API_KEY")
@@ -84,13 +93,26 @@ def call_with_retry(
                 }
                 if json_mode:
                     payload["response_format"] = {"type": "json_object"}
+                body = json.dumps(payload).encode("utf-8")
+                # Cloudflare rejects Python's default User-Agent with "error code: 1010".
+                headers = {
+                    "Authorization": f"Bearer {groq_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "research-paper-discovery/1.0",
+                }
+                with _RATE_LOCK:
+                    now = time.monotonic()
+                    if now - _RATE_WINDOW_START >= 60:
+                        _RATE_WINDOW_START, _RATE_TOKENS = now, 0
+                    estimated = len(body) // 4 + 128
+                    if _RATE_TOKENS + estimated > _RATE_TOKEN_BUDGET:
+                        time.sleep(max(0.0, 60 - (now - _RATE_WINDOW_START)))
+                        _RATE_WINDOW_START, _RATE_TOKENS = time.monotonic(), 0
+                    _RATE_TOKENS += estimated
                 request = urllib.request.Request(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={
-                        "Authorization": f"Bearer {groq_key}",
-                        "Content-Type": "application/json",
-                    },
+                    data=body,
+                    headers=headers,
                     method="POST",
                 )
                 with urllib.request.urlopen(request, timeout=60) as response:
