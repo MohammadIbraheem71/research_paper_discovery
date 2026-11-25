@@ -4,6 +4,8 @@ Owner: Aliyan. Starts offline: all node bodies are stubs, so no API key is read.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from src.graph import run_question
@@ -30,11 +32,17 @@ if st.button("Ask") and question.strip():
     citations = state.get("citations", [])
     if citations:
         for citation in citations:
-            st.markdown(f"- [arXiv:{citation['arxiv_id']}] {citation['title']}")
+            arxiv_id = citation["arxiv_id"]
+            url = f"https://arxiv.org/abs/{arxiv_id}"
+            st.markdown(f"- [arXiv:{arxiv_id}]({url}) — {citation['title']}")
     else:
         st.write("No citations.")
     trend = state.get("trend_data")
     if trend:
         st.subheader("Trend")
         st.write(f"{trend['label']}: {trend['slope']:+.4f} share/quarter")
-        st.write(trend.get("chart_path") or "No chart produced by the stub.")
+        chart_path = trend.get("chart_path")
+        if chart_path and Path(chart_path).exists():
+            st.image(chart_path, caption="Topic share over time")
+        else:
+            st.write(chart_path or "No chart produced.")
