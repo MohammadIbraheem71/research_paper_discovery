@@ -1,0 +1,124 @@
+SAMPLE QUESTIONS AND EXPECTED RESPONSES
+=======================================
+
+These prompts cover all four routes used by the Streamlit demo. LLM wording may
+vary, but the route, evidence, citations, trend values, and fallback behavior
+below should remain consistent.
+
+
+LITERATURE
+----------
+
+Question: Find papers about low-resource machine translation
+
+Expected response:
+  Route: literature
+  The answer should summarize relevant papers on low-resource machine
+  translation. The Citations panel should contain clickable arXiv links for
+  verified relevant papers such as:
+    - arXiv:2005.05507
+    - arXiv:2009.09359
+    - arXiv:2011.05284
+    - arXiv:2103.13272
+    - arXiv:2104.00290
+  No trend chart is expected.
+
+
+Question: Show papers on 3D object detection from 2022 onwards
+
+Expected response:
+  Route: literature
+  The answer should list relevant 2022+ cs.CV papers on 3D object detection.
+  The Citations panel should contain clickable arXiv links for verified
+  relevant papers such as:
+    - arXiv:2203.05625
+    - arXiv:2206.09474
+    - arXiv:2207.03720
+    - arXiv:2210.07372
+    - arXiv:2211.08287
+  No trend chart is expected.
+
+
+TREND
+-----
+
+Question: Track the popularity of diffusion models over the years
+
+Expected response:
+  Route: trend
+  The answer should briefly describe the trend. No paper citations are
+  expected. The Trend section should show:
+    Label: Image / Diffusion / Gan
+    Slope: +0.0001 share/quarter
+    Chart: inline PNG at results/trends/topic_trend_5.png
+
+
+Question: Which topics in machine learning are declining over time?
+
+Expected response:
+  Route: trend
+  The answer should briefly describe a declining topic trend. No paper
+  citations are expected. The Trend section should show:
+    Label: Policy / Reinforcement / Learning
+    Slope: -0.0006 share/quarter
+    Chart: inline PNG at results/trends/topic_trend_4.png
+
+
+HYBRID
+------
+
+Question: Papers on diffusion models and how their share changed over time
+
+Expected response:
+  Route: hybrid
+  The answer should combine a short list/summary of relevant papers with a
+  topic-share trend statement. The Citations panel should contain clickable
+  arXiv links for verified relevant papers such as:
+    - arXiv:2207.11192
+    - arXiv:2212.08228
+    - arXiv:2302.02412
+    - arXiv:2303.02490
+    - arXiv:2303.17905
+  The Trend section should show:
+    Label: Image / Diffusion / Gan
+    Slope: +0.0001 share/quarter
+    Chart: inline PNG at results/trends/topic_trend_5.png
+
+
+Question: Find federated learning papers and track their quarterly share
+
+Expected response:
+  Route: hybrid
+  The answer should combine relevant federated-learning papers with a
+  topic-share trend statement. The Citations panel should contain clickable
+  arXiv links for verified relevant papers such as:
+    - arXiv:2101.05428
+    - arXiv:2102.01375
+    - arXiv:2106.06843
+    - arXiv:2107.01154
+    - arXiv:2209.14086
+  The Trend section should show:
+    Label: Network / Neural / Learning
+    Slope: -0.0004 share/quarter
+    Chart: inline PNG at results/trends/topic_trend_2.png
+
+
+FALLBACK
+--------
+
+Question: What is the weather tomorrow?
+
+Expected response:
+  Route: fallback
+  Exact answer:
+    I focus on arXiv papers in cs.LG, cs.CL and cs.CV (2018-2024) and their trends over time. Try asking for papers on a topic, how a topic has changed over time, or both together.
+  No citations. The app should show the low-confidence warning.
+
+
+Question: Hello
+
+Expected response:
+  Route: fallback
+  Exact answer:
+    I focus on arXiv papers in cs.LG, cs.CL and cs.CV (2018-2024) and their trends over time. Try asking for papers on a topic, how a topic has changed over time, or both together.
+  No citations. The app should show the low-confidence warning.
