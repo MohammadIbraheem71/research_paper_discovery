@@ -1,354 +1,129 @@
 # Research Paper Discovery and Trend Analysis
 
-Research paper discovery project for a data science elective at FAST NUCES.
+A reproducible arXiv paper-discovery pipeline and question-answering app for `cs.LG`, `cs.CL` and `cs.CV` papers from 2018 to 2024.
 
 **Repository:** [github.com/MohammadIbraheem71/research_paper_discovery](https://github.com/MohammadIbraheem71/research_paper_discovery)
 
+---
+
 ## Problem statement
 
-Build a reproducible pipeline that prepares arXiv papers for category classification and
-research-paper discovery. The pipeline preserves the agreed dataset contract, prevents
-train/test leakage, and produces comparable text and numeric feature representations.
+Build a reproducible system that:
 
-## Dataset
+1. prepares a large arXiv snapshot for machine learning and retrieval;
+2. preserves a stable dataset contract and prevents train/test leakage;
+3. classifies papers into three primary categories;
+4. discovers topics and measures how their shares change over time;
+5. answers natural-language questions using retrieved papers and trend evidence;
+6. reports results from hand-verified evaluation data.
 
-**Source.** The raw data is the
-[arXiv Dataset](https://www.kaggle.com/datasets/Cornell-University/arxiv)
-published by Cornell University on Kaggle. It is a JSON-lines file with one
-paper per line (`id`, `title`, `abstract`, `categories`, version dates, and
-more). The project streams it line by line instead of loading the whole
-snapshot into memory.
+The final application supports four question types:
 
-**Processed data.** The Phase 1 files are published as a public Kaggle
-Dataset: [arXiv Papers Cleaned](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned).
-It can be downloaded without a Kaggle login and contains:
-
-| File | Rows | Contents |
-|---|---:|---|
-| `papers_raw.parquet` | 120,000 | Output of step A1, before cleaning |
-| `papers.parquet` | 119,919 | Final cleaned dataset used by every notebook |
-| `papers_sample.parquet` | 10,000 | Reproducible random sample (seed 42) for quick tests |
-
-**Embeddings dataset:** [mohammadibraheem71/arxiv-papers-embeddings](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-embeddings) — 119,919 × 384 L2-normalized vectors in exact `papers.parquet` row order.
-
-**Scope.** Primary categories `cs.LG`, `cs.CL` and `cs.CV`; first-version
-submission date from 2018 to 2024 inclusive. The sample is capped at 40,000
-papers per category, so it is balanced by design rather than a natural arXiv
-sample. The pre-cap counts can be reproduced with
-`src/uncapped_counts.py` and `notebooks/04_uncapped_counts.ipynb`; they explain
-why the sample was balanced and are reported alongside the EDA class-balance
-section.
-
-**Features.**
-
-| Column | Type | Description |
+| Route | Meaning | Example |
 |---|---|---|
-| `id` | string | arXiv identifier |
-| `title` | string | Paper title, lightly cleaned |
-| `abstract` | string | Abstract, lightly cleaned |
-| `text_raw` | string | Title + abstract with LaTeX/URLs removed; case and punctuation kept (embeddings, LLM, retrieval) |
-| `text_lemma` | string | Lowercased, stop-word-free, lemmatized text (TF-IDF; LDA only if topic modeling is added later) |
-| `primary_category` | string | Target label: `cs.LG`, `cs.CL` or `cs.CV` |
-| `categories` | string | All arXiv categories, space-separated |
-| `date` | datetime | First-version submission date |
-| `year` | int | Submission year (2018–2024) |
-| `month` | int | Submission month (1–12) |
-| `quarter` | string | Submission quarter, e.g. `2021Q3` |
+| `literature` | Find and summarize papers | “Find papers about low-resource machine translation” |
+| `trend` | Analyze topic change over time | “Track the popularity of diffusion models over the years” |
+| `hybrid` | Papers plus trend | “Show papers about CLIP and how their topic share trends over time” |
+| `fallback` | Off-topic or unanswerable question | “What is the weather tomorrow?” |
 
-**Target variable.** `primary_category` is a three-class label. After cleaning
-the classes are `cs.CL` 39,980, `cs.CV` 39,973 and `cs.LG` 39,966. Because the
-40,000-per-category cap balances them, accuracy is meaningful but macro-F1 is
-still reported; the balance is a sampling choice and not the real arXiv
-distribution.
+---
 
-## Cleaning summary
+## Dataset details
 
-Step A1 (`src/preprocessing.py`) filters the raw snapshot and step A2
-(`src/cleaning.py`, documented in `notebooks/01_data_cleaning.ipynb`) cleans
-the text and builds the final table.
+### Source and scope
 
-| Step | Rows | What happened |
-|---|---:|---|
-| Raw filtered data (A1) | 120,000 | Kept only `cs.LG`, `cs.CL`, `cs.CV`, first-version years 2018–2024, capped at 40,000 per category (seed 42) |
-| After missing / duplicates / withdrawn | 119,970 | Dropped 0 missing values, 0 duplicate ids, 29 near-identical titles and 1 withdrawn-paper notice |
-| After abstracts under 30 words | 119,919 | Dropped 51 too-short abstracts (52 were flagged; one had already been removed) |
+- **Raw source:** [Cornell University arXiv Dataset](https://www.kaggle.com/datasets/Cornell-University/arxiv).
+- **Primary categories:** `cs.LG`, `cs.CL`, `cs.CV`.
+- **Date window:** first-version submission year 2018–2024 inclusive.
+- **Balancing cap:** 40,000 papers per primary category, seed 42.
+- **Sampling note:** the final dataset is balanced by design, not by natural arXiv distribution.
 
-Other cleaning decisions:
+### Published datasets
 
-- **Inconsistent text formats:** LaTeX formulas and commands, URLs, stray
-  symbols, newlines and repeated spaces are removed; capitalisation and
-  punctuation are kept in `text_raw`.
-- **Two text versions:** `text_raw` is for sentence embeddings, the LLM and
-  retrieval; `text_lemma` (lowercased, stop words and generic academic words
-  removed, spaCy-lemmatized) is for TF-IDF.
-- **Dates and categories:** `date` is the first-version submission date;
-  `year`, `month` and `quarter` are derived from it. `primary_category` is the
-  first listed arXiv category.
-- **Outliers:** abstract/title lengths outside the IQR fences are documented
-  but **kept**. They are legitimate papers, and deleting rows would break the
-  row alignment with the shared sentence embeddings. The embedding model
-  truncates very long abstracts, which is acceptable because the key content
-  comes first.
-- **Row order:** the final table is sorted once by `id` and must never be
-  re-sorted, because the embeddings and all downstream results follow this
-  order.
-- **Validation:** no nulls, unique ids, sorted ids, expected categories, years
-  2018–2024 and a valid `quarter` format are all checked before saving.
-
-### Uncapped category counts
-
-`papers_raw.parquet` is already capped at 40,000 papers per category, so it
-cannot show the real arXiv class imbalance. `src/uncapped_counts.py` applies
-the same category and year filter as step A1 to the **original Cornell
-snapshot** without the cap, and `notebooks/04_uncapped_counts.ipynb` imports and
-runs it.
-
-Run the notebook on Kaggle with the
-[`Cornell-University/arxiv`](https://www.kaggle.com/datasets/Cornell-University/arxiv)
-dataset attached. Do not use `papers.parquet` or `papers_raw.parquet` as the
-input — they are already cleaned or capped. The notebook writes four files to
-`/kaggle/working`:
-
-| File | Contents |
+| Dataset | Contents |
 |---|---|
-| `uncapped_counts.csv` | Papers per category, share, papers after the 40k cap and papers removed by it |
-| `uncapped_counts_by_year.csv` | Papers per category and year |
-| `uncapped_counts_pivot.csv` | Year × category pivot with a yearly `total` |
-| `uncapped_totals_by_year.csv` | Total kept papers per year |
+| [arXiv Papers Cleaned](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned) | `papers_raw.parquet` (120,000 rows), `papers.parquet` (119,919 rows), `papers_sample.parquet` (10,000 rows) |
+| [arXiv Papers Embeddings](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-embeddings) | `embeddings.npy`, 119,919 × 384 L2-normalized vectors in exact `papers.parquet` row order |
 
-These counts explain why the sample is balanced and feed Person B's EDA
-class-balance section. The four CSVs are committed under `results/` so the EDA
-notebook can read them directly. The only other generated files tracked under
-`results/` are `feature_manifest.json`, `label_classes.json` and
-`embeddings_check.json`; matrices, split metadata and all `.npy` arrays are
-ignored by Git.
+### Final class distribution
 
-## Key findings
+| Category | Papers |
+|---|---:|
+| `cs.CL` | 39,980 |
+| `cs.CV` | 39,973 |
+| `cs.LG` | 39,966 |
+| **Total** | **119,919** |
 
-- **Balanced by construction.** The 40,000-per-category cap keeps 120,000 papers and
-  cleaning leaves 119,919 (`cs.CL` 39,980, `cs.CV` 39,973, `cs.LG` 39,966). Real arXiv
-  class proportions are uneven (`cs.CV` 96,756 vs `cs.CL` 51,918 uncapped), so all
-  modelling conclusions apply to the balanced sample. See
-  `images/2_uncapped_class_balance.png` and `images/2_class_balance.png`.
-- **Volume grows over time.** Uncapped yearly totals rise from 14,971 papers in 2018 to
-  58,861 in 2024, with `cs.CL` growing fastest (`images/2_year_category_trend.png`).
-- **Monthly and quarterly view.** The new monthly and quarterly line charts show the
-  short-term publication rhythm and seasonal structure inside the yearly trend, both
-  overall and per category (`images/2_monthly_volume.png`,
-  `images/2_quarterly_volume.png`).
-- **Length is a weak discriminator.** Abstracts have a median of about 168 words, with
-  only small differences between categories; the new per-category histograms show the
-  full shape and long tails, including a slight shift toward longer `cs.CV` abstracts
-  (`images/2_per_category_abstract_histograms.png`). Long abstracts will be truncated
-  by a 256-token embedding model.
-- **Text is the main signal.** Category-specific n-grams are highly exclusive (85%–99%
-  of their use in one category), while generic terms such as “model”, “base” and
-  “datum” appear in all three classes (`images/2_per_category_distinctive_unigrams.png`,
-  `images/2_per_category_distinctive_bigrams.png`).
-- **Labels are ambiguous.** 69,412 papers (about 58%) are cross-listed, so report macro-F1
-  and a per-class confusion matrix, especially for `cs.LG`.
+The original uncapped snapshot contained 236,619 matching papers:
 
-## Team contributions
+| Category | Papers | Share |
+|---|---:|---:|
+| `cs.CV` | 96,756 | 40.89% |
+| `cs.LG` | 87,945 | 37.17% |
+| `cs.CL` | 51,918 | 21.94% |
 
-### Ibraheem
+Yearly uncapped totals grow from 14,971 papers in 2018 to 58,861 in 2024. Claims about real arXiv volume or imbalance must use the uncapped counts, not the capped sample.
 
-- **Shared configuration:** `src/config.py` defines the agreed categories
-  (`cs.LG`, `cs.CL`, `cs.CV`), the 2018–2024 date window, the per-category cap,
-  the embedding model and dimension, and the global seed, so every step of the
-  pipeline is reproducible.
-- **Data acquisition and filtering (A1):** `src/preprocessing.py` streams the
-  raw arXiv JSON snapshot line by line (memory-safe), keeps only papers whose
-  primary category is in the agreed list and whose first-version date falls in
-  the window, caps papers per category for balance, and writes
-  `papers_raw.parquet` plus a reproducible 10,000-paper sample.
-- **Cleaning pipeline (A2):** `src/cleaning.py` drops missing values, duplicate
-  ids and near-identical normalised titles, removes withdrawn-paper notices and
-  abstracts under 30 words, strips LaTeX/URLs/stray symbols, and builds the two
-  text versions — `text_raw` (lightly cleaned, case and punctuation kept) and
-  `text_lemma` (lowercased, stop words and generic academic words removed,
-  spaCy-lemmatized). It derives `year`, `month` and `quarter`, enforces the
-  shared column contract, and sorts once by `id` so all downstream steps stay
-  aligned. Outputs `papers.parquet` and `papers_sample.parquet`.
-- **Data cleaning notebook:** `notebooks/01_data_cleaning.ipynb` documents the
-  pipeline end to end — missing values, duplicates, inconsistent formats
-  (LaTeX, URLs, dates, categories), bad records, IQR length outliers, an issue
-  summary, before/after examples, the two text versions, validation checks and
-  saving. It produces `images/01_issues_summary.png` and
-  `images/01_length_outliers.png`.
-- **Uncapped category counts (A1b):** `src/uncapped_counts.py` streams the
-  original arXiv snapshot and repeats the A1 category/year filter without the
-  40,000-per-category cap, producing papers per category and per year before
-  balancing. `notebooks/04_uncapped_counts.ipynb` imports and calls those
-  functions, shows the uncapped-versus-capped table and the year × category
-  pivot, and saves four CSVs for the EDA class-balance section.
-- **Dataset:** published the cleaned arXiv dataset on Kaggle
-  (`mohammadibraheem71/arxiv-papers-cleaned`) and linked it in the README.
+### Dataset columns
 
-### Sohaib
+| Column | Description |
+|---|---|
+| `id` | arXiv identifier |
+| `title` | cleaned title |
+| `abstract` | cleaned abstract |
+| `text_raw` | title + abstract with LaTeX/URLs removed; case and punctuation kept |
+| `text_lemma` | lowercased, stop-word-free, lemmatized text |
+| `primary_category` | target label: `cs.LG`, `cs.CL` or `cs.CV` |
+| `categories` | all arXiv categories, space-separated |
+| `date` | first-version submission date |
+| `year` | submission year |
+| `month` | submission month |
+| `quarter` | submission quarter, e.g. `2021Q3` |
 
-- **Exploratory data analysis (EDA):** `notebooks/02_eda.ipynb` loads the
-  cleaned dataset (`papers.parquet`, 119,919 papers across `cs.LG`, `cs.CL` and
-  `cs.CV`, 2018 to 2024) and looks at it before modelling. It covers structure,
-  missing values, duplicates, text length, class balance before and after the
-  cap, yearly trends, category overlap, vocabulary, per-category length and
-  terms, and feature correlations. Each plot is saved to `images/` and also
-  shows under its code cell, and every section ends with a short written
-  insight. The notebook closes with what the findings mean for modelling. Input,
-  image and results paths have fallbacks, so it runs both on Kaggle and in a
-  local clone (`data/papers.parquet`, `results/`, `images/`).
-- **Class balance before the cap:** `results/uncapped_counts.csv` and
-  `results/uncapped_counts_pivot.csv` hold the counts from the original arXiv
-  snapshot, before the per-category cap. `cs.CV` has 96,756 papers (40.89%),
-  `cs.LG` 87,945 (37.17%) and `cs.CL` 51,918 (21.94%), 236,619 in total, so
-  `cs.CV` is about 1.86 times `cs.CL`. The 40k cap keeps 120,000 papers and
-  removes 116,619, and cleaning drops 81 more, which leaves 119,919. The cleaned
-  dataset is therefore balanced by design, not naturally, and conclusions from
-  the EDA and the models apply to this balanced sample, not to all of arXiv
-  (`images/2_uncapped_class_balance.png` for the original counts,
-  `images/2_class_balance.png` for the cleaned dataset).
-- **Yearly trends:** In the uncapped data volume grows from 14,971 papers in
-  2018 to 58,861 in 2024 (about 3.9 times), and `cs.CL` grows fastest (about 5
-  times) (`images/2_year_category_trend.png`). The cleaned sample keeps a similar
-  share of each year within a category (about 77% of `cs.CL`, 41% of `cs.CV` and
-  45% of `cs.LG`). It keeps each category's growth but changes the ranking
-  between categories: `cs.CL` looks largest in 2023 and 2024 in the sample, while
-  `cs.CV` is the largest in the uncapped data
-  (`images/2_time_trends_papers_per_year.png`). Claims about volume or category
-  mix over time should use the uncapped counts. Mean abstract length rises from
-  about 156 to 175 words over the period, and mean title length from 9.0 to 9.9
-  (`images/2_time_trends_length_by_year.png`).
-- **Text length analysis:** Histograms and boxplots of abstract and title word
-  counts. The median abstract has about 168 words (middle half roughly 140 to
-  200) and the median title about 9 words (7 to 11), so abstracts are around 18
-  times longer. Length differs little by category: median abstracts have 156
-  words for `cs.CL`, 170 for `cs.LG` and 177 for `cs.CV`, and titles have a
-  median of 9 in all three (`images/2_per_category_lengths.png`). Abstract
-  outliers exist on both sides, so fixed-length truncation is reasonable for
-  embedding models.
-- **Category overlap:** 69,412 papers (about 58%) are cross-listed in more than
-  one category. The most common pairs are `cs.AI` + `cs.LG` (16,797), `cs.LG` +
-  `stat.ML` (14,293) and `cs.AI` + `cs.CL` (13,009), and `cs.LG` appears in five
-  of the top ten pairs. `primary_category` is a single label on a partly
-  ambiguous problem, so errors should be checked per class.
-- **Vocabulary analysis:** Top unigrams and bigrams are counted on `text_lemma`,
-  so stop words and generic academic phrases do not dominate. The most frequent
-  words (model, base and datum) appear in all three categories and say little
-  about the field. Category-specific terms are much more distinctive, usually
-  with 85% to 99% of their use in one category: NLP terms for `cs.CL` (dialogue,
-  multilingual, machine translation), visual terms for `cs.CV` (lidar, instance
-  segmentation, depth estimation) and learning-theory and reinforcement
-  learning terms for `cs.LG` (regret, bandit, federated learning, policy
-  gradient) (`images/2_per_category_distinctive_unigrams.png`,
-  `images/2_per_category_distinctive_bigrams.png`).
-- **Feature correlations:** The heatmap of abstract length, title length, number
-  of categories and year shows only weak relationships (|r| up to about 0.12), so
-  these features can be used together without multicollinearity concerns.
-- **Implications for modelling:** Report macro-F1 next to accuracy and check
-  per-class errors, especially `cs.LG` against `cs.CV` and `cs.CL`. Use
-  `text_lemma` with TF-IDF for bag-of-words methods and `text_raw` for
-  embeddings. Expect embedding models with a 256-token limit to truncate long
-  abstracts. Any statement about real arXiv class proportions or trends must come
-  from the uncapped counts.
+`text_raw` is used for sentence embeddings, LLM prompts and retrieval. `text_lemma` is used for TF-IDF and topic modeling.
 
-### Aliyan
+The final table is sorted once by `id` and must never be re-sorted: embeddings and downstream artifacts depend on that row order.
 
-- **Problem statement:** Addressed by the top-level [Problem statement](#problem-statement)
-  section above.
-- **Preprocessing and normalization:** `notebooks/03_preprocessing.ipynb` loads the
-  cleaned parquet dataset, validates the target and required fields, creates a
-  stratified train/test split, and fits every transformation on the training data
-  only. Word features use TF-IDF with unigram and bigram ranges and L2
-  normalization; numeric metadata features are scaled using training data
-  statistics.
-- **Feature preparation:** The notebook compares TF-IDF features, sentence-transformer
-  embeddings (`all-MiniLM-L6-v2`), and scaled numeric features derived from paper
-  metadata. TF-IDF uses `text_lemma`, while embeddings use `text_raw`. It encodes the
-  target with `LabelEncoder` (`results/label_classes.json`), prints the top 15 TF-IDF
-  terms per class, explains scaling per model type, and writes `feature_manifest.json`
-  from the actual in-memory values. The 10,000-paper stratified subset is a CPU-safe
-  demo; the full-corpus job is `src/embed_all.py` (see [How to run](#how-to-run)).
-- **Reproducibility and repository structure:** Shared settings such as categories,
-  date range, embedding model, embedding dimension, sample size, and random seed
-  are defined in `src/config.py`. Generated matrices and split metadata belong in
-  `results/`, local parquet inputs belong in `data/`, reusable code belongs in `src/`,
-  and notebooks document each stage of the workflow.
-- **How to run the notebooks:** Install the packages with
-  `pip install -r requirements.txt` and download the spaCy model used by the
-  cleaning pipeline with `python -m spacy download en_core_web_sm` (the
-  cleaning notebook also attempts this automatically). Notebook `03` checks
-  `RESEARCH_PAPERS_PATH`, then `/kaggle/input/arxiv-papers-cleaned/papers.parquet`,
-  then `data/papers.parquet` for the cleaned input. Run notebooks `01` → `02` → `03`
-  in order; the preprocessing notebook writes split-specific matrices and small
-  metadata manifests to `results/`. Notebook `04_uncapped_counts.ipynb` is
-  separate: run it on Kaggle with the Cornell snapshot attached, as described
-  under [Uncapped category counts](#uncapped-category-counts).
+---
 
-## How to run
+## Phase 1 work
 
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-```
+Phase 1 built the data foundation used by every later stage.
 
-### Environment setup
+| Stage | Work | Main files |
+|---|---|---|
+| Shared config | Froze categories, years, cap, seed and embedding settings | `src/config.py` |
+| A1 filtering | Streamed the raw JSON snapshot, kept the selected categories and years, capped to 40k per class | `src/preprocessing.py` |
+| A1b uncapped counts | Recomputed category and year counts without the cap | `src/uncapped_counts.py`, `notebooks/04_uncapped_counts.ipynb` |
+| A2 cleaning | Removed bad records, cleaned text, built `text_raw`/`text_lemma`, derived date features and validated the contract | `src/cleaning.py`, `notebooks/01_data_cleaning.ipynb` |
+| EDA | Studied class balance, lengths, cross-listing, vocabulary, correlations and time trends | `notebooks/02_eda.ipynb` |
+| Feature preparation | Encoded labels, made the stratified 80/20 split, built TF-IDF/numeric features and a CPU-safe embedding demo | `notebooks/03_preprocessing.ipynb` |
+| Full embeddings | Generated all 119,919 × 384 embeddings on Kaggle GPU and verified row alignment | `notebooks/00_kaggle_embeddings.ipynb`, `src/embed_all.py` |
 
-```bash
-cp .env.example .env
-# Fill in your own key in .env, then:
-python -m src.check_env
-```
+### Cleaning progression
 
-`.env` is gitignored and `.env.example` contains placeholders only. The current
-stubs need no key; when the real LLM lands, use either a Gemini key from
-[Google AI Studio](https://aistudio.google.com/app/apikey) **or** a Groq key
-from [console.groq.com](https://console.groq.com/keys) — only one provider is
-required. `check_env` reports only which variables are set (never their values).
-Every teammate needs their own key: free tiers are rate-limited per key.
+| Stage | Rows |
+|---|---:|
+| Raw filtered data after A1 | 120,000 |
+| After missing values, duplicate ids/normalized titles and withdrawn notices | 119,970 |
+| After removing abstracts under 30 words | 119,919 |
 
-Download the Kaggle dataset
-[`mohammadibraheem71/arxiv-papers-cleaned`](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned)
-and place `papers.parquet` in `data/`. Run the notebooks in order:
-`notebooks/01_data_cleaning.ipynb` → `notebooks/02_eda.ipynb` →
-`notebooks/03_preprocessing.ipynb`. Notebook `03` checks
-`RESEARCH_PAPERS_PATH`, then `/kaggle/input/arxiv-papers-cleaned/papers.parquet`,
-then `data/papers.parquet`. A notebook can be re-executed with
+Cleaning removed 0 missing values, 0 duplicate ids, 29 near-identical titles, 1 withdrawn-paper notice and 51 too-short abstracts. Length outliers were documented but kept because they are legitimate papers and would break embedding row alignment if removed.
 
-```bash
-jupyter nbconvert --to notebook --execute --inplace \
-  --ExecutePreprocessor.timeout=-1 notebooks/02_eda.ipynb
-```
+### Key EDA findings
 
-Notebook `04_uncapped_counts.ipynb` is separate: run it on Kaggle with the
-[Cornell arXiv snapshot](https://www.kaggle.com/datasets/Cornell-University/arxiv)
-attached, as described under [Uncapped category counts](#uncapped-category-counts).
+- The capped dataset is balanced by construction.
+- Abstracts have a median of about 168 words; titles have a median of about 9.
+- Abstract length is a weak category discriminator.
+- 69,412 papers, about 58%, are cross-listed, so `primary_category` is sometimes ambiguous.
+- Category-specific terms are highly informative, while generic words such as “model”, “base” and “datum” appear across all classes.
+- Report macro-F1 and per-class errors, especially for `cs.LG`.
 
-**Full-corpus embeddings (Kaggle/GPU only).** Do not run this locally. The easiest
-route is to import `notebooks/00_kaggle_embeddings.ipynb` into a Kaggle Notebook,
-attach `arxiv-papers-cleaned`, enable a GPU, and run all cells. It clones the
-repo, generates the embeddings and verifies them; publishing is manual.
-Equivalently, on Kaggle enable a GPU, attach `arxiv-papers-cleaned`, clone this
-repository, then run:
+---
 
-```bash
-python src/embed_all.py \
-  --papers /kaggle/input/datasets/mohammadibraheem71/arxiv-papers-cleaned/papers.parquet \
-  --out /kaggle/working/embeddings.npy \
-  --check results/embeddings_check.json
-```
+## Models and pipeline used
 
-The script writes `embeddings.npy` (119,919 × 384, L2-normalized, in exact
-`papers.parquet` row order) and a small `results/embeddings_check.json` containing the
-row count and SHA-256 of the `id` column. The published public dataset is linked
-under [Dataset](#dataset) above, and `results/embeddings_check.json` is committed
-under `results/`.
-
-## Phase 2 architecture
-
-Phase 2 adds a four-route question-answering graph on top of the Phase 1 data and
-embeddings; see `OWNERS.md` for module ownership. `src/contracts.py` is frozen and
-shared by everyone.
+### Phase 2 architecture
 
 ```mermaid
 flowchart TD
@@ -368,25 +143,107 @@ flowchart TD
     FB --> E
 ```
 
-Module map:
+### Module map
 
 | Module | Responsibility |
 |---|---|
-| `src/contracts.py`, `src/settings_p2.py` | Frozen types, constants and paths |
-| `src/llm.py`, `src/rag.py` | LLM calls with cache/backoff; retrieval and grounded answers |
-| `src/topics.py`, `src/trends.py` | LDA/BERTopic topics and quarterly topic-share trends |
-| `src/classify.py` | Four classifier variants and comparison metrics |
-| `src/nodes.py`, `src/graph.py` | Graph nodes and the compiled LangGraph with SQLite checkpoints |
-| `src/evaluate.py`, `eval/` | Retrieval/router metrics and hand-labelled gold files |
-| `app.py` | Streamlit shell; starts without an API key |
-| `notebooks/05_*`–`10_*` | One notebook per workstream; `10_evaluation.ipynb` is executed with verified-label outputs |
+| `src/contracts.py`, `src/settings_p2.py` | frozen types, constants and paths |
+| `src/llm.py` | LLM calls with disk cache, retry/backoff and JSON mode |
+| `src/rag.py` | FAISS retrieval, metadata filters and grounded answer generation |
+| `src/topics.py` | LDA and BERTopic topic modeling |
+| `src/trends.py` | quarterly topic share, slopes, lookup and chart generation |
+| `src/classify.py` | four classifier variants and metrics |
+| `src/nodes.py`, `src/graph.py` | graph nodes, retry loop and LangGraph wiring |
+| `src/evaluate.py`, `eval/` | hand-labelled gold files and evaluation helpers |
+| `app.py` | Streamlit question-answering interface |
 
-### Verified Phase 2 evaluation
+### Topic modeling
 
-The retrieval labels in `eval/label_decisions.csv` were reviewed and applied to
-`eval/eval_retrieval.json`; all 30 retrieval questions have
-`needs_human_verification: false`. The following values come from the executed
-`notebooks/10_evaluation.ipynb` and its committed result files.
+- **LDA:** 20 topics, c_v 0.5605.
+- **BERTopic:** 24 non-outlier topics, c_v 0.5629, outlier share 0.4282.
+- BERTopic uses the Phase 1 embeddings; LDA uses `text_lemma`.
+- Topic labels are heuristic drafts from the top three words.
+
+### Trend analysis
+
+- `results/topic_share.csv` contains 656 rows over 28 quarters and 24 non-outlier topics.
+- Outlier topic `-1` is excluded from the topic-share numerator but retained in the quarterly denominator.
+- Slopes are fitted with ordinary least squares.
+- Trend questions are matched to topic labels by word overlap and `difflib.SequenceMatcher`.
+- Charts are written to `results/trends/topic_trend_<topic_id>.png` and displayed inline in the app.
+
+### Classification
+
+Four variants were compared on the Phase 1 stratified split:
+
+| Model | Features |
+|---|---|
+| `logreg` | TF-IDF |
+| `nb` | TF-IDF |
+| `svm` | TF-IDF |
+| `logreg_emb` | sentence embeddings |
+
+### Retrieval and answer generation
+
+- FAISS `IndexFlatIP` over 119,919 L2-normalized vectors.
+- Query embeddings use `all-MiniLM-L6-v2`, dimension 384.
+- Hard filters support year range, primary category and BERTopic topic.
+- `TOP_K = 5`.
+- LLM answers are grounded in retrieved abstracts and must cite papers as `[arXiv:ID]`.
+- If the answer contains no valid citation, the system returns `not enough evidence`.
+
+### LLM and graph
+
+- One provider key is required for real LLM calls: `GROQ_API_KEY` or `GEMINI_API_KEY`.
+- The executed evaluation used `LLM_MODEL=openai/gpt-oss-20b` through Groq.
+- `src/llm.py` caches prompts by hash and retries with exponential backoff.
+- The graph allows up to 2 retries when document grading fails.
+- Graph state is persisted per `thread_id` using SQLite in `cache/phase2_checkpoints.sqlite`.
+
+---
+
+## Final results
+
+### Phase 1
+
+| Result | Value |
+|---|---:|
+| Raw filtered papers | 120,000 |
+| Final cleaned papers | 119,919 |
+| `cs.CL` / `cs.CV` / `cs.LG` | 39,980 / 39,973 / 39,966 |
+| Train / test rows | 95,935 / 23,984 |
+| Embedding shape | 119,919 × 384 |
+
+### Topic modeling
+
+| Model | Topics | c_v | Outlier share |
+|---|---:|---:|---:|
+| LDA | 20 | 0.5605 | 0 |
+| BERTopic | 24 | 0.5629 | 0.4282 |
+
+Notable trend slopes:
+
+| Topic | Slope | p-value |
+|---|---:|---:|
+| Language / Model / Text | +0.000709 | 0.279 |
+| Series / Time / Forecasting | +0.000515 | 3.28e-05 |
+| Image / Segmentation / Detection | -0.001725 | 4.59e-07 |
+| Policy / Reinforcement / Learning | -0.000602 | 0.000926 |
+
+### Classification
+
+| Model | Accuracy | Macro-F1 |
+|---|---:|---:|
+| `logreg` | 0.9221 | 0.9221 |
+| `nb` | 0.9101 | 0.9100 |
+| `svm` | 0.9255 | 0.9255 |
+| `logreg_emb` | 0.9159 | 0.9158 |
+
+The best model is `svm`. `cs.LG` is the hardest class because of cross-listing overlap.
+
+### Retrieval, ablation and routing
+
+Verified from `notebooks/10_evaluation.ipynb` and committed result files.
 
 | Retrieval metric | Value |
 |---|---:|
@@ -395,46 +252,243 @@ The retrieval labels in `eval/label_decisions.csv` were reviewed and applied to
 | Hit Rate@10 | 1.0 |
 | MRR | 0.9567 |
 
-Ablation results (30 questions):
+Ablation over 30 questions:
 
 | Variant | Hit Rate@5 | Mean RR | Avg LLM calls |
 |---|---:|---:|---:|
 | with rewrite+grade | 0.9 | 0.838889 | 4.2 |
 | without rewrite+grade | 1.0 | 0.898333 | 0.0 |
 
-Router accuracy from the same executed notebook is 1.0 on 40 questions. Detailed
-outputs are in `results/phase2_retrieval_metrics_at_k.csv`,
-`results/phase2_ablation.csv`, `results/phase2_ablation_questions.csv`,
-`results/phase2_router_metrics.csv`, and `notebooks/10_evaluation.ipynb`.
+Direct retrieval without rewrite/grade performed better on this verified eval set while using fewer LLM calls.
 
-Run the tests from the repo root:
+| Router metric | Value |
+|---|---:|
+| Questions | 40 |
+| Accuracy | 1.0 |
+| Correct predictions | 40 |
+
+The router confusion matrix is diagonal with 10 questions per route.
+
+### Human verification
+
+| Artifact | Result |
+|---|---|
+| `eval/label_decisions.csv` | 521 reviewed rows |
+| Relevant decisions | 465 `y` |
+| Irrelevant decisions | 56 `n` |
+| `eval/eval_retrieval.json` | all 30 questions have `needs_human_verification: false` |
+| `eval/citation_sample.csv` | 20 sampled citations, all `supported? = y` |
+
+### Tests
 
 ```bash
-python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-The tests check imports, retrieval `Doc` shapes and filters, all four routes, the
-retry loop, the `TrendData` contract, the ranking metrics and the eval JSON
-files. No API key, GPU, model download or `data/embeddings.npy` is needed.
+Result:
 
-## Future work
+```text
+7 passed
+```
 
-- **Topic modeling (A3):** `src/topics.py` is an experimental, code-only scaffold
-  (Gensim dictionary and bag-of-words corpus, LDA coherence tuning, top-word
-  export and dominant-topic assignment). It is **not part of Phase 1**: no
-  topic-model notebook or result files are delivered, and topic modeling is not
-  evaluated in this phase.
+Tests cover imports, retrieval document shapes and filters, all four routes, the retry loop, the `TrendData` contract, ranking metrics and eval JSON structure. Tests are offline and need no API key or GPU. The real retrieval test does require the local `data/embeddings.npy` and `data/doc_topics.parquet` assets from Section 3, so place those first.
+
+---
+
+## How to run the project
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/MohammadIbraheem71/research_paper_discovery.git
+cd research_paper_discovery
+
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+### 2. Configure the environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add **one** provider key:
+
+```text
+GROQ_API_KEY=...
+```
+
+or:
+
+```text
+GEMINI_API_KEY=...
+```
+
+Optionally set a currently available model id:
+
+```text
+LLM_MODEL=openai/gpt-oss-20b
+```
+
+`.env` is gitignored and secrets are never printed. To check non-secret configuration variables:
+
+```bash
+python -m src.check_env
+```
+
+### 3. Put the required data assets in place
+
+Download [arXiv Papers Cleaned](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-cleaned) and place:
+
+```text
+papers.parquet
+```
+
+in `data/`.
+
+Download [arXiv Papers Embeddings](https://www.kaggle.com/datasets/mohammadibraheem71/arxiv-papers-embeddings) and place:
+
+```text
+embeddings.npy
+```
+
+in `data/`.
+
+Retrieval also needs:
+
+```text
+data/doc_topics.parquet
+```
+
+Generate it by running `notebooks/05_topic_modeling.ipynb`, or place an already generated copy in `data/`. This file is intentionally not committed.
+
+The trend table `results/topic_share.csv` is already tracked.
+
+### 4. Optional full reproduction
+
+Phase 1 notebooks:
+
+```text
+notebooks/01_data_cleaning.ipynb
+notebooks/02_eda.ipynb
+notebooks/03_preprocessing.ipynb
+```
+
+Notebook `04_uncapped_counts.ipynb` is separate and needs the original Cornell snapshot attached on Kaggle.
+
+Full-corpus embedding generation is Kaggle/GPU only:
+
+```bash
+python src/embed_all.py \
+  --papers /kaggle/input/datasets/mohammadibraheem71/arxiv-papers-cleaned/papers.parquet \
+  --out /kaggle/working/embeddings.npy \
+  --check results/embeddings_check.json
+```
+
+Phase 2 notebooks:
+
+```text
+notebooks/05_topic_modeling.ipynb
+notebooks/06_trends.ipynb
+notebooks/07_classification.ipynb
+notebooks/09_langgraph.ipynb
+```
+
+`notebooks/08_rag.ipynb` is a skeleton walkthrough; the real RAG implementation is in `src/rag.py`.
+
+Do **not** rerun `notebooks/10_evaluation.ipynb` unless you are prepared to refill `eval/citation_sample.csv`; rerunning it blanks the `supported?` column.
+
+A notebook can be executed from the repo root with:
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace \
+  --ExecutePreprocessor.timeout=-1 notebooks/02_eda.ipynb
+```
+
+### 5. Run tests
+
+```bash
+python -m pytest -q
+```
+
+### 6. Run the app
+
+```bash
+.venv/bin/python -m streamlit run app.py
+```
+
+Open:
+
+```text
+http://localhost:8501
+```
+
+Try these prompts:
+
+```text
+Find papers about low-resource machine translation
+Track the popularity of diffusion models over the years
+Show papers about CLIP and how their topic share trends over time
+What is the weather tomorrow?
+```
+
+More examples are in `sample_questions.txt`.
+
+---
 
 ## Repository structure
 
 ```text
-data/          # local parquet inputs; ignored by git
-images/        # plots used in the cleaning and EDA notebooks
-notebooks/     # cleaning, EDA, preprocessing and uncapped-count notebooks
-results/       # tracked small manifests/CSVs; matrices, split metadata and npy ignored
-src/           # reusable project modules
+data/          local parquet/npy inputs; ignored by git
+eval/          hand-labelled retrieval/routing gold files and review worksheets
+images/        plots from cleaning, EDA, classification and evaluation
+notebooks/     Phase 1 and Phase 2 notebooks
+results/       small tracked manifests, CSVs and committed result artifacts
+src/           reusable pipeline, retrieval, LLM, graph and evaluation modules
+tests/         skeleton and contract tests
+app.py         Streamlit interface
+sample_questions.txt
 ```
 
-The EDA notebook contains descriptions for each plotted image; the images are in
-the `images/` folder.
+---
+
+## Team contributions
+
+### Ibraheem
+
+- shared configuration and frozen Phase 2 contracts;
+- A1 filtering, A2 cleaning and uncapped counts;
+- full-corpus embedding job;
+- topic modeling, trend analysis and chart generation;
+- LangGraph wiring, SQLite checkpointer and graph node integration;
+- label review tooling, human label application and Stage 4 artifacts.
+
+### Sohaib
+
+- exploratory data analysis and EDA insights;
+- classification comparison;
+- router, fallback and synthesis nodes;
+- router accuracy evaluation.
+
+### Aliyan
+
+- preprocessing, label encoding, split and feature preparation;
+- LLM access layer with cache, retry/backoff and JSON mode;
+- FAISS retrieval and grounded answer generation;
+- retrieval and ablation evaluation;
+- Streamlit interface.
+
+---
+
+## Limitations and notes
+
+- The 40,000-per-category cap makes the dataset balanced by construction; results do not describe natural arXiv proportions.
+- `primary_category` is a single label even though many papers are cross-listed.
+- Topic labels are heuristic drafts from top words and still need human review.
+- BERTopic leaves 42.82% of papers as outliers; these are excluded from topic-share numerators.
+- `notebooks/08_rag.ipynb` is a skeleton; the implemented RAG path lives in `src/rag.py` and the graph.
+- Rerunning `notebooks/10_evaluation.ipynb` regenerates `eval/citation_sample.csv` and clears the citation review column.
+- Real LLM answers require one provider key; importing and testing the project does not.
