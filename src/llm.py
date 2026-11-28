@@ -1,13 +1,15 @@
 """LLM access with a small on-disk cache and a retry/backoff seam.
 
-Owner: Aliyan. Stubs only: no API key or network access is needed to import or
-call these functions yet.
+Owner: Aliyan. Gemini uses google-genai; Groq uses chat-completions REST.
+Import needs no key; calls do. CANNED_* are legacy sentinels kept for downstream
+stub checks.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
+import threading
 import time
 from pathlib import Path
 import os
@@ -15,10 +17,20 @@ import urllib.request
 
 from dotenv import load_dotenv
 
+# Load .env before settings_p2 reads LLM_MODEL, otherwise a notebook/import that
+# reaches settings_p2 first silently uses the retired default model.
+load_dotenv()
+
 from src.settings_p2 import CACHE_DIR, LLM_MODEL
 
 logger = logging.getLogger(__name__)
-load_dotenv()
+
+# Groq free tier allows 8,000 tokens/minute. Pace requests by a conservative
+# token estimate so a long ablation does not spend the whole run on 429s.
+_RATE_LOCK = threading.Lock()
+_RATE_WINDOW_START = time.monotonic()
+_RATE_TOKENS = 0
+_RATE_TOKEN_BUDGET = 7_800
 
 CANNED_TEXT = "STUB ANSWER: replace me with a real LLM call."
 CANNED_JSON: dict = {"answer": CANNED_TEXT, "confidence": 0.0}
@@ -56,11 +68,12 @@ def call_with_retry(
         max_retries: Number of retries after the first attempt.
         backoff_seconds: Base delay, doubled after each failed attempt.
     Returns:
-        str, e.g. ``"STUB ANSWER: replace me with a real LLM call."``.
+        str: the provider completion text.
     Owner:
         Aliyan.
     """
     """Call a configured Gemini or Groq provider with exponential backoff."""
+    global _RATE_WINDOW_START, _RATE_TOKENS
     for attempt in range(max_retries + 1):
         try:
             gemini_key = os.getenv("GEMINI_API_KEY")
@@ -80,34 +93,48 @@ def call_with_retry(
                 }
                 if json_mode:
                     payload["response_format"] = {"type": "json_object"}
+                body = json.dumps(payload).encode("utf-8")
+                # Cloudflare rejects Python's default User-Agent with "error code: 1010".
+                headers = {
+                    "Authorization": f"Bearer {groq_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "research-paper-discovery/1.0",
+                }
+                with _RATE_LOCK:
+                    now = time.monotonic()
+                    if now - _RATE_WINDOW_START >= 60:
+                        _RATE_WINDOW_START, _RATE_TOKENS = now, 0
+                    estimated = len(body) // 4 + 128
+                    if _RATE_TOKENS + estimated > _RATE_TOKEN_BUDGET:
+                        time.sleep(max(0.0, 60 - (now - _RATE_WINDOW_START)))
+                        _RATE_WINDOW_START, _RATE_TOKENS = time.monotonic(), 0
+                    _RATE_TOKENS += estimated
                 request = urllib.request.Request(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers={
-                        "Authorization": f"Bearer {groq_key}",
-                        "Content-Type": "application/json",
-                    },
+                    data=body,
+                    headers=headers,
                     method="POST",
                 )
                 with urllib.request.urlopen(request, timeout=60) as response:
                     body = json.loads(response.read().decode("utf-8"))
                 text = body["choices"][0]["message"]["content"]
             else:
-                import google.generativeai as genai
+                from google import genai
+                from google.genai import types
 
-                genai.configure(api_key=gemini_key)
-                generation_config = (
-                    {"response_mime_type": "application/json"}
-                    if json_mode
-                    else None
+                client = genai.Client(
+                    api_key=gemini_key,
+                    http_options=types.HttpOptions(timeout=60_000),
                 )
-                model = genai.GenerativeModel(
-                    model_name=LLM_MODEL,
-                    system_instruction=system or None,
-                )
-                response = model.generate_content(
-                    prompt,
-                    generation_config=generation_config,
+                response = client.models.generate_content(
+                    model=LLM_MODEL,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system or None,
+                        response_mime_type=(
+                            "application/json" if json_mode else None
+                        ),
+                    ),
                 )
                 text = response.text
             path = _cache_path(prompt, system, json_mode)
@@ -131,7 +158,7 @@ def llm_call(prompt: str, system: str = "", json_mode: bool = False) -> str:
         system: Optional system instruction.
         json_mode: Ask the provider for JSON output; still returned as a string.
     Returns:
-        str, e.g. ``"STUB ANSWER: replace me with a real LLM call."``.
+        str: the provider completion text.
     Owner:
         Aliyan.
     """
@@ -158,7 +185,7 @@ def llm_json(prompt: str, system: str = "") -> dict:
         prompt: User prompt.
         system: Optional system instruction.
     Returns:
-        dict, e.g. ``{"answer": "STUB ...", "confidence": 0.0}``.
+        dict: the parsed JSON object returned by the provider.
     Owner:
         Aliyan.
     """

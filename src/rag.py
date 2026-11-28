@@ -1,6 +1,7 @@
 """Retrieval-augmented generation resources and operations.
 
-Owner: Aliyan. Stubs are offline and need neither a FAISS index nor embeddings.
+Owner: Aliyan. Retrieval uses a real FAISS index built over data/embeddings.npy;
+missing assets are fatal so the demo and graph can never return dummy papers.
 """
 from __future__ import annotations
 
@@ -25,28 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 class Resources(TypedDict):
-    """Loaded retrieval assets. The stub uses ``None`` for real index objects."""
+    """Loaded retrieval assets: a real FAISS index, papers and topic ids."""
 
-    index: Optional[object]
+    index: object
     docs: list[Doc]
     doc_ids: list[str]
-
-
-def _dummy_doc(i: int, year_min: Optional[int], year_max: Optional[int],
-               category: Optional[str], topic: Optional[int]) -> Doc:
-    """Build one dummy Doc that visibly respects the requested filters."""
-    year = year_min if year_min is not None else 2020
-    if year_max is not None:
-        year = min(year, year_max)
-    return Doc(
-        arxiv_id=f"dummy-{i:04d}",
-        title=f"Stub paper {i}",
-        abstract="Stub abstract used until the real retriever is implemented.",
-        year=year,
-        primary_category=category or "cs.LG",
-        score=1.0 / (i + 1),
-        bertopic_topic=topic,
-    )
 
 
 @lru_cache(maxsize=1)
@@ -58,15 +42,22 @@ def load_resources() -> Resources:
     Args:
         None.
     Returns:
-        Resources, e.g. ``{"index": None, "docs": [Doc, ...], "doc_ids": [...]}``.
+        Resources with a real FAISS index, all papers and their topic ids.
     Owner:
         Aliyan.
     """
     papers_path = ROOT / "data" / "papers.parquet"
-    if not EMBEDDINGS_PATH.exists() or not papers_path.exists():
-        logger.warning("Real retrieval assets missing: data/embeddings.npy and data/papers.parquet")
-        docs = [_dummy_doc(i, None, None, None, None) for i in range(TOP_K)]
-        return Resources(index=None, docs=docs, doc_ids=[d["arxiv_id"] for d in docs])
+    required = {
+        "embeddings": EMBEDDINGS_PATH,
+        "papers": papers_path,
+        "doc_topics": DOC_TOPICS_PATH,
+    }
+    missing = [f"{name}: {path}" for name, path in required.items() if not path.exists()]
+    if missing:
+        raise FileNotFoundError(
+            "Real retrieval assets are required; dummy papers are never used. Missing: "
+            + "; ".join(missing)
+        )
 
     embeddings = np.load(EMBEDDINGS_PATH, mmap_mode="r")
     papers = pd.read_parquet(papers_path)
@@ -78,19 +69,22 @@ def load_resources() -> Resources:
             f"{embeddings.shape[0]} embeddings"
         )
 
-    topics = pd.DataFrame()
-    if DOC_TOPICS_PATH.exists():
-        topics = pd.read_parquet(DOC_TOPICS_PATH)
-        if len(topics) != len(papers):
-            raise ValueError(
-                f"Topic/metadata row mismatch: {len(topics)} topics vs {len(papers)} papers"
-            )
+    topics = pd.read_parquet(DOC_TOPICS_PATH)
+    if len(topics) != len(papers):
+        raise ValueError(
+            f"Topic/metadata row mismatch: {len(topics)} topics vs {len(papers)} papers"
+        )
 
     topic_column = next(
         (column for column in ("bertopic_topic", "topic_id", "topic")
          if column in topics.columns),
         None,
     )
+    if topic_column is None:
+        raise ValueError(
+            f"{DOC_TOPICS_PATH} has no topic column; expected one of "
+            "bertopic_topic, topic_id, topic"
+        )
     docs: list[Doc] = []
     for i, row in papers.reset_index(drop=True).iterrows():
         topic_value = None
@@ -109,6 +103,11 @@ def load_resources() -> Resources:
             bertopic_topic=topic_value,
         ))
     index = build_index(np.asarray(embeddings, dtype=np.float32))
+    print(
+        f"Retrieval resources loaded: FAISS ntotal={index.ntotal}, "
+        f"embeddings={tuple(embeddings.shape)}, doc_topics rows={len(topics)}, "
+        f"papers={len(papers)}"
+    )
     return Resources(index=index, docs=docs, doc_ids=[doc["arxiv_id"] for doc in docs])
 
 
@@ -120,7 +119,7 @@ def build_index(embeddings: np.ndarray) -> object:
     Args:
         embeddings: Array of shape ``(n, 384)``.
     Returns:
-        object, e.g. ``None`` in the stub.
+        object, a populated ``faiss.IndexFlatIP``.
     Owner:
         Aliyan.
     """
@@ -185,16 +184,15 @@ def retrieve(
         category: Exact primary_category.
         topic: Exact BERTopic topic id.
     Returns:
-        list[Doc], e.g. ``[Doc(arxiv_id='dummy-0000', year=2020, ...)]`` of length k.
+        list[Doc], at most k real papers from the FAISS index.
     Owner:
         Aliyan.
     """
     resources = load_resources()
     if resources["index"] is None:
-        return [
-            _dummy_doc(i, year_min, year_max, category, topic)
-            for i in range(max(0, k))
-        ]
+        raise RuntimeError(
+            "FAISS index is unavailable; real retrieval assets are required"
+        )
 
     index = resources["index"]
     docs = resources["docs"]
@@ -231,7 +229,7 @@ def generate_answer(question: str, docs: list[Doc]) -> tuple[str, list[Citation]
         question: The user's question.
         docs: Retrieved papers.
     Returns:
-        tuple[str, list[Citation]], e.g. ``("STUB...", [Citation(...), ...])``.
+        tuple[str, list[Citation]], the grounded answer and its real citations.
     Owner:
         Aliyan.
     """

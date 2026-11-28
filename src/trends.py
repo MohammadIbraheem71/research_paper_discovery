@@ -1,7 +1,7 @@
 """Topic-share trend analysis.
 
-Owner: Ibraheem. All stubs read the small tracked dummy CSV instead of real
-topic assignments so they run offline in milliseconds.
+Owner: Ibraheem. Trends are computed from the real quarterly topic-share table
+produced by notebook 06 (results/topic_share.csv).
 """
 from __future__ import annotations
 
@@ -203,7 +203,7 @@ def plot_topic_trend(trend_data: TrendData) -> str:
     Args:
         trend_data: Data returned by :func:`trend_lookup`.
     Returns:
-        str, e.g. ``"results/topic_trend_dummy.png"`` (no file is written by the stub).
+        str, the path of the written PNG under ``results/trends/``.
     Owner:
         Ibraheem.
     """

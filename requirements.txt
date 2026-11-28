@@ -17,7 +17,7 @@ bertopic
 umap-learn
 hdbscan
 python-dotenv
-google-generativeai
+google-genai
 streamlit
 plotly
 pytest

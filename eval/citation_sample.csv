@@ -1,0 +1,165 @@
+﻿question,answer,arxiv_id,title,supported?
+Find papers about low-resource machine translation,"**Papers on low‑resource machine translation**
+
+| Year | Title | Key focus |
+|------|-------|-----------|
+| 2021 | *Survey of Low‑Resource Machine Translation* | Provides a comprehensive overview of techniques and shared‑task evaluations for MT when very little parallel data is available. [arXiv:2109.00486] |
+| 2022 | *High‑Resource Methodological Bias in Low‑Resource Investigations* | Examines how down‑sampling high‑resource data can misrepresent low‑resource MT performance, highlighting data quality issues. [arXiv:2211.07534] |
+| 2021 | *The FLORES‑101 Evaluation Benchmark for Low‑Resource and Multilingual Machine Translation* | Introduces a high‑quality, high‑coverage benchmark covering 101 languages, facilitating evaluation of low‑resource MT systems. [arXiv:2106.03193] |
+| 2020 | *Neural Machine Translation for Extremely Low‑Resource African Languages: A Case Study on Bambara* | Presents the first parallel dataset and benchmark for Bambara‑English/French MT, and discusses strategies to handle data scarcity. [arXiv:2011.05284] |
+| 2021 | *Neural Machine Translation for Low‑Resource Languages: A Survey* | Surveys recent advances in low‑resource NMT, offers quantitative analysis of popular solutions, and provides guidelines for selecting techniques. [arXiv:2106.15115]",2109.00486,Survey of Low-Resource Machine Translation,y
+Find papers about low-resource machine translation,"**Papers on low‑resource machine translation**
+
+| Year | Title | Key focus |
+|------|-------|-----------|
+| 2021 | *Survey of Low‑Resource Machine Translation* | Provides a comprehensive overview of techniques and shared‑task evaluations for MT when very little parallel data is available. [arXiv:2109.00486] |
+| 2022 | *High‑Resource Methodological Bias in Low‑Resource Investigations* | Examines how down‑sampling high‑resource data can misrepresent low‑resource MT performance, highlighting data quality issues. [arXiv:2211.07534] |
+| 2021 | *The FLORES‑101 Evaluation Benchmark for Low‑Resource and Multilingual Machine Translation* | Introduces a high‑quality, high‑coverage benchmark covering 101 languages, facilitating evaluation of low‑resource MT systems. [arXiv:2106.03193] |
+| 2020 | *Neural Machine Translation for Extremely Low‑Resource African Languages: A Case Study on Bambara* | Presents the first parallel dataset and benchmark for Bambara‑English/French MT, and discusses strategies to handle data scarcity. [arXiv:2011.05284] |
+| 2021 | *Neural Machine Translation for Low‑Resource Languages: A Survey* | Surveys recent advances in low‑resource NMT, offers quantitative analysis of popular solutions, and provides guidelines for selecting techniques. [arXiv:2106.15115]",2211.07534,High-Resource Methodological Bias in Low-Resource Investigations,y
+Find papers about low-resource machine translation,"**Papers on low‑resource machine translation**
+
+| Year | Title | Key focus |
+|------|-------|-----------|
+| 2021 | *Survey of Low‑Resource Machine Translation* | Provides a comprehensive overview of techniques and shared‑task evaluations for MT when very little parallel data is available. [arXiv:2109.00486] |
+| 2022 | *High‑Resource Methodological Bias in Low‑Resource Investigations* | Examines how down‑sampling high‑resource data can misrepresent low‑resource MT performance, highlighting data quality issues. [arXiv:2211.07534] |
+| 2021 | *The FLORES‑101 Evaluation Benchmark for Low‑Resource and Multilingual Machine Translation* | Introduces a high‑quality, high‑coverage benchmark covering 101 languages, facilitating evaluation of low‑resource MT systems. [arXiv:2106.03193] |
+| 2020 | *Neural Machine Translation for Extremely Low‑Resource African Languages: A Case Study on Bambara* | Presents the first parallel dataset and benchmark for Bambara‑English/French MT, and discusses strategies to handle data scarcity. [arXiv:2011.05284] |
+| 2021 | *Neural Machine Translation for Low‑Resource Languages: A Survey* | Surveys recent advances in low‑resource NMT, offers quantitative analysis of popular solutions, and provides guidelines for selecting techniques. [arXiv:2106.15115]",2106.03193,The FLORES-101 Evaluation Benchmark for Low-Resource and Multilingual Machine Translation,y
+Find papers about low-resource machine translation,"**Papers on low‑resource machine translation**
+
+| Year | Title | Key focus |
+|------|-------|-----------|
+| 2021 | *Survey of Low‑Resource Machine Translation* | Provides a comprehensive overview of techniques and shared‑task evaluations for MT when very little parallel data is available. [arXiv:2109.00486] |
+| 2022 | *High‑Resource Methodological Bias in Low‑Resource Investigations* | Examines how down‑sampling high‑resource data can misrepresent low‑resource MT performance, highlighting data quality issues. [arXiv:2211.07534] |
+| 2021 | *The FLORES‑101 Evaluation Benchmark for Low‑Resource and Multilingual Machine Translation* | Introduces a high‑quality, high‑coverage benchmark covering 101 languages, facilitating evaluation of low‑resource MT systems. [arXiv:2106.03193] |
+| 2020 | *Neural Machine Translation for Extremely Low‑Resource African Languages: A Case Study on Bambara* | Presents the first parallel dataset and benchmark for Bambara‑English/French MT, and discusses strategies to handle data scarcity. [arXiv:2011.05284] |
+| 2021 | *Neural Machine Translation for Low‑Resource Languages: A Survey* | Surveys recent advances in low‑resource NMT, offers quantitative analysis of popular solutions, and provides guidelines for selecting techniques. [arXiv:2106.15115]",2011.05284,Neural Machine Translation for Extremely Low-Resource African Languages: A Case Study on Bambara,y
+Find papers about low-resource machine translation,"**Papers on low‑resource machine translation**
+
+| Year | Title | Key focus |
+|------|-------|-----------|
+| 2021 | *Survey of Low‑Resource Machine Translation* | Provides a comprehensive overview of techniques and shared‑task evaluations for MT when very little parallel data is available. [arXiv:2109.00486] |
+| 2022 | *High‑Resource Methodological Bias in Low‑Resource Investigations* | Examines how down‑sampling high‑resource data can misrepresent low‑resource MT performance, highlighting data quality issues. [arXiv:2211.07534] |
+| 2021 | *The FLORES‑101 Evaluation Benchmark for Low‑Resource and Multilingual Machine Translation* | Introduces a high‑quality, high‑coverage benchmark covering 101 languages, facilitating evaluation of low‑resource MT systems. [arXiv:2106.03193] |
+| 2020 | *Neural Machine Translation for Extremely Low‑Resource African Languages: A Case Study on Bambara* | Presents the first parallel dataset and benchmark for Bambara‑English/French MT, and discusses strategies to handle data scarcity. [arXiv:2011.05284] |
+| 2021 | *Neural Machine Translation for Low‑Resource Languages: A Survey* | Surveys recent advances in low‑resource NMT, offers quantitative analysis of popular solutions, and provides guidelines for selecting techniques. [arXiv:2106.15115]",2106.15115,Neural Machine Translation for Low-Resource Languages: A Survey,y
+Show papers on 3D object detection from 2022 onwards,"**Papers on 3D object detection published from 2022 onwards**
+
+- Monocular 3D Object Detection using Multi‑Stage Approaches with Attention and Slicing aided hyper inference – 2022 [arXiv:2212.11804]  
+- Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom – 2022 [arXiv:2207.03720]  
+- Towards Fair and Comprehensive Comparisons for Image‑Based 3D Object Detection – 2023 [arXiv:2310.05447]  
+- LAM3D: Leveraging Attention for Monocular 3D Object Detection – 2024 [arXiv:2408.01739]  
+- 3D Object Detection for Autonomous Driving: A Comprehensive Survey – 2022 [arXiv:2206.09474]",2212.11804,Monocular 3D Object Detection using Multi-Stage Approaches with Attention and Slicing aided hyper inference,y
+Show papers on 3D object detection from 2022 onwards,"**Papers on 3D object detection published from 2022 onwards**
+
+- Monocular 3D Object Detection using Multi‑Stage Approaches with Attention and Slicing aided hyper inference – 2022 [arXiv:2212.11804]  
+- Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom – 2022 [arXiv:2207.03720]  
+- Towards Fair and Comprehensive Comparisons for Image‑Based 3D Object Detection – 2023 [arXiv:2310.05447]  
+- LAM3D: Leveraging Attention for Monocular 3D Object Detection – 2024 [arXiv:2408.01739]  
+- 3D Object Detection for Autonomous Driving: A Comprehensive Survey – 2022 [arXiv:2206.09474]",2207.0372,Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom,y
+Show papers on 3D object detection from 2022 onwards,"**Papers on 3D object detection published from 2022 onwards**
+
+- Monocular 3D Object Detection using Multi‑Stage Approaches with Attention and Slicing aided hyper inference – 2022 [arXiv:2212.11804]  
+- Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom – 2022 [arXiv:2207.03720]  
+- Towards Fair and Comprehensive Comparisons for Image‑Based 3D Object Detection – 2023 [arXiv:2310.05447]  
+- LAM3D: Leveraging Attention for Monocular 3D Object Detection – 2024 [arXiv:2408.01739]  
+- 3D Object Detection for Autonomous Driving: A Comprehensive Survey – 2022 [arXiv:2206.09474]",2310.05447,Towards Fair and Comprehensive Comparisons for Image-Based 3D Object Detection,y
+Show papers on 3D object detection from 2022 onwards,"**Papers on 3D object detection published from 2022 onwards**
+
+- Monocular 3D Object Detection using Multi‑Stage Approaches with Attention and Slicing aided hyper inference – 2022 [arXiv:2212.11804]  
+- Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom – 2022 [arXiv:2207.03720]  
+- Towards Fair and Comprehensive Comparisons for Image‑Based 3D Object Detection – 2023 [arXiv:2310.05447]  
+- LAM3D: Leveraging Attention for Monocular 3D Object Detection – 2024 [arXiv:2408.01739]  
+- 3D Object Detection for Autonomous Driving: A Comprehensive Survey – 2022 [arXiv:2206.09474]",2408.01739,LAM3D: Leveraging Attention for Monocular 3D Object Detection,y
+Show papers on 3D object detection from 2022 onwards,"**Papers on 3D object detection published from 2022 onwards**
+
+- Monocular 3D Object Detection using Multi‑Stage Approaches with Attention and Slicing aided hyper inference – 2022 [arXiv:2212.11804]  
+- Bounding Box Disparity: 3D Metrics for Object Detection With Full Degree of Freedom – 2022 [arXiv:2207.03720]  
+- Towards Fair and Comprehensive Comparisons for Image‑Based 3D Object Detection – 2023 [arXiv:2310.05447]  
+- LAM3D: Leveraging Attention for Monocular 3D Object Detection – 2024 [arXiv:2408.01739]  
+- 3D Object Detection for Autonomous Driving: A Comprehensive Survey – 2022 [arXiv:2206.09474]",2206.09474,3D Object Detection for Autonomous Driving: A Comprehensive Survey,y
+Which papers discuss graph learning in 2024?,"The following 2024 papers discuss graph learning:
+
+1. **Future Directions in the Theory of Graph Machine Learning** – focuses on theoretical aspects of graph neural networks and their expressive power, generalization, and optimization [arXiv:2402.02287].
+2. **Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis** – studies graph prompting and its theoretical foundations for graph data operations [arXiv:2410.01635].
+3. **Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models** – proposes using large language models to design versatile graph learning methods across various procedures [arXiv:2402.11641].
+4. **Introduction to Graph Neural Networks for Machine Learning Engineers** – surveys graph neural networks, covering theory, experiments, and challenges such as oversmoothing and oversquashing [arXiv:2412.19419].
+5. **A Survey of Data‑Efficient Graph Learning** – reviews strategies for training graph neural networks with limited labeled data, covering self‑supervised, semi‑supervised, and few‑shot learning [arXiv:2402.00447].",2402.02287,Future Directions in the Theory of Graph Machine Learning,y
+Which papers discuss graph learning in 2024?,"The following 2024 papers discuss graph learning:
+
+1. **Future Directions in the Theory of Graph Machine Learning** – focuses on theoretical aspects of graph neural networks and their expressive power, generalization, and optimization [arXiv:2402.02287].
+2. **Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis** – studies graph prompting and its theoretical foundations for graph data operations [arXiv:2410.01635].
+3. **Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models** – proposes using large language models to design versatile graph learning methods across various procedures [arXiv:2402.11641].
+4. **Introduction to Graph Neural Networks for Machine Learning Engineers** – surveys graph neural networks, covering theory, experiments, and challenges such as oversmoothing and oversquashing [arXiv:2412.19419].
+5. **A Survey of Data‑Efficient Graph Learning** – reviews strategies for training graph neural networks with limited labeled data, covering self‑supervised, semi‑supervised, and few‑shot learning [arXiv:2402.00447].",2410.01635,Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis,y
+Which papers discuss graph learning in 2024?,"The following 2024 papers discuss graph learning:
+
+1. **Future Directions in the Theory of Graph Machine Learning** – focuses on theoretical aspects of graph neural networks and their expressive power, generalization, and optimization [arXiv:2402.02287].
+2. **Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis** – studies graph prompting and its theoretical foundations for graph data operations [arXiv:2410.01635].
+3. **Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models** – proposes using large language models to design versatile graph learning methods across various procedures [arXiv:2402.11641].
+4. **Introduction to Graph Neural Networks for Machine Learning Engineers** – surveys graph neural networks, covering theory, experiments, and challenges such as oversmoothing and oversquashing [arXiv:2412.19419].
+5. **A Survey of Data‑Efficient Graph Learning** – reviews strategies for training graph neural networks with limited labeled data, covering self‑supervised, semi‑supervised, and few‑shot learning [arXiv:2402.00447].",2402.11641,Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models,y
+Which papers discuss graph learning in 2024?,"The following 2024 papers discuss graph learning:
+
+1. **Future Directions in the Theory of Graph Machine Learning** – focuses on theoretical aspects of graph neural networks and their expressive power, generalization, and optimization [arXiv:2402.02287].
+2. **Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis** – studies graph prompting and its theoretical foundations for graph data operations [arXiv:2410.01635].
+3. **Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models** – proposes using large language models to design versatile graph learning methods across various procedures [arXiv:2402.11641].
+4. **Introduction to Graph Neural Networks for Machine Learning Engineers** – surveys graph neural networks, covering theory, experiments, and challenges such as oversmoothing and oversquashing [arXiv:2412.19419].
+5. **A Survey of Data‑Efficient Graph Learning** – reviews strategies for training graph neural networks with limited labeled data, covering self‑supervised, semi‑supervised, and few‑shot learning [arXiv:2402.00447].",2412.19419,Introduction to Graph Neural Networks for Machine Learning Engineers,y
+Which papers discuss graph learning in 2024?,"The following 2024 papers discuss graph learning:
+
+1. **Future Directions in the Theory of Graph Machine Learning** – focuses on theoretical aspects of graph neural networks and their expressive power, generalization, and optimization [arXiv:2402.02287].
+2. **Does Graph Prompt Work? A Data Operation Perspective with Theoretical Analysis** – studies graph prompting and its theoretical foundations for graph data operations [arXiv:2410.01635].
+3. **Towards Versatile Graph Learning Approach: from the Perspective of Large Language Models** – proposes using large language models to design versatile graph learning methods across various procedures [arXiv:2402.11641].
+4. **Introduction to Graph Neural Networks for Machine Learning Engineers** – surveys graph neural networks, covering theory, experiments, and challenges such as oversmoothing and oversquashing [arXiv:2412.19419].
+5. **A Survey of Data‑Efficient Graph Learning** – reviews strategies for training graph neural networks with limited labeled data, covering self‑supervised, semi‑supervised, and few‑shot learning [arXiv:2402.00447].",2402.00447,A Survey of Data-Efficient Graph Learning,y
+Find papers on diffusion models for image generation,"**Papers on diffusion models for image generation**
+
+| Year | Title | Relevance to image generation |
+|------|-------|------------------------------|
+| 2023 | *Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later* | The abstract discusses how pretrained diffusion models (including Stable Diffusion) generate images by first committing to an outline and then adding finer details, directly addressing the image‑generation process. [arXiv:2303.02490] |
+| 2024 | *Efficient Diffusion Models: A Comprehensive Survey from Principles to Practices* | The survey covers diffusion models’ success in “image synthesis” among other generative tasks, summarizing principles and practices that enable efficient image generation. [arXiv:2410.11795] |
+| 2023 | *Mixture of Diffusers for scene composition and high resolution image generation* | The paper proposes an algorithm that uses multiple diffusion processes to control composition, enabling the generation of larger, high‑resolution images with specified object locations and styles. [arXiv:2302.02412] |
+| 2024 | *Diffusion Models Meet Remote Sensing: Principles, Methods, and Perspectives* | The review includes a section on “image generation” using diffusion models for remote‑sensing data, highlighting state‑of‑the‑art results in this domain. [arXiv:2404.08926] |
+
+These abstracts provide evidence that the listed papers focus on diffusion models for image generation.",2303.0249,"Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later",y
+Find papers on diffusion models for image generation,"**Papers on diffusion models for image generation**
+
+| Year | Title | Relevance to image generation |
+|------|-------|------------------------------|
+| 2023 | *Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later* | The abstract discusses how pretrained diffusion models (including Stable Diffusion) generate images by first committing to an outline and then adding finer details, directly addressing the image‑generation process. [arXiv:2303.02490] |
+| 2024 | *Efficient Diffusion Models: A Comprehensive Survey from Principles to Practices* | The survey covers diffusion models’ success in “image synthesis” among other generative tasks, summarizing principles and practices that enable efficient image generation. [arXiv:2410.11795] |
+| 2023 | *Mixture of Diffusers for scene composition and high resolution image generation* | The paper proposes an algorithm that uses multiple diffusion processes to control composition, enabling the generation of larger, high‑resolution images with specified object locations and styles. [arXiv:2302.02412] |
+| 2024 | *Diffusion Models Meet Remote Sensing: Principles, Methods, and Perspectives* | The review includes a section on “image generation” using diffusion models for remote‑sensing data, highlighting state‑of‑the‑art results in this domain. [arXiv:2404.08926] |
+
+These abstracts provide evidence that the listed papers focus on diffusion models for image generation.",2410.11795,Efficient Diffusion Models: A Comprehensive Survey from Principles to Practices,y
+Find papers on diffusion models for image generation,"**Papers on diffusion models for image generation**
+
+| Year | Title | Relevance to image generation |
+|------|-------|------------------------------|
+| 2023 | *Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later* | The abstract discusses how pretrained diffusion models (including Stable Diffusion) generate images by first committing to an outline and then adding finer details, directly addressing the image‑generation process. [arXiv:2303.02490] |
+| 2024 | *Efficient Diffusion Models: A Comprehensive Survey from Principles to Practices* | The survey covers diffusion models’ success in “image synthesis” among other generative tasks, summarizing principles and practices that enable efficient image generation. [arXiv:2410.11795] |
+| 2023 | *Mixture of Diffusers for scene composition and high resolution image generation* | The paper proposes an algorithm that uses multiple diffusion processes to control composition, enabling the generation of larger, high‑resolution images with specified object locations and styles. [arXiv:2302.02412] |
+| 2024 | *Diffusion Models Meet Remote Sensing: Principles, Methods, and Perspectives* | The review includes a section on “image generation” using diffusion models for remote‑sensing data, highlighting state‑of‑the‑art results in this domain. [arXiv:2404.08926] |
+
+These abstracts provide evidence that the listed papers focus on diffusion models for image generation.",2302.02412,Mixture of Diffusers for scene composition and high resolution image generation,y
+Find papers on diffusion models for image generation,"**Papers on diffusion models for image generation**
+
+| Year | Title | Relevance to image generation |
+|------|-------|------------------------------|
+| 2023 | *Diffusion Models Generate Images Like Painters: an Analytical Theory of Outline First, Details Later* | The abstract discusses how pretrained diffusion models (including Stable Diffusion) generate images by first committing to an outline and then adding finer details, directly addressing the image‑generation process. [arXiv:2303.02490] |
+| 2024 | *Efficient Diffusion Models: A Comprehensive Survey from Principles to Practices* | The survey covers diffusion models’ success in “image synthesis” among other generative tasks, summarizing principles and practices that enable efficient image generation. [arXiv:2410.11795] |
+| 2023 | *Mixture of Diffusers for scene composition and high resolution image generation* | The paper proposes an algorithm that uses multiple diffusion processes to control composition, enabling the generation of larger, high‑resolution images with specified object locations and styles. [arXiv:2302.02412] |
+| 2024 | *Diffusion Models Meet Remote Sensing: Principles, Methods, and Perspectives* | The review includes a section on “image generation” using diffusion models for remote‑sensing data, highlighting state‑of‑the‑art results in this domain. [arXiv:2404.08926] |
+
+These abstracts provide evidence that the listed papers focus on diffusion models for image generation.",2404.08926,"Diffusion Models Meet Remote Sensing: Principles, Methods, and Perspectives",y
+Show papers about reinforcement learning from human feedback,"**Papers on reinforcement learning from human feedback**
+
+- **Convergence of a Human-in-the-Loop Policy-Gradient Algorithm With Eligibility Trace Under Reward, Policy, and Advantage Feedback** – analyzes the COACH algorithm and proposes a convergent variant, E‑COACH, for learning from various human feedback types [arXiv:2109.07054].
+
+- **Mapping out the Space of Human Feedback for Reinforcement Learning: A Conceptual Framework** – develops a taxonomy of human feedback types and quality metrics for RLHF, and discusses design requirements and future research directions [arXiv:2411.11761].
+
+- **Reinforcement Learning via Reasoning from Demonstration** – presents a framework where agents learn from human demonstrations by building causal models and reasoning from them, effectively using demonstration as human feedback [arXiv:2004.05512].
+
+- **Learning Montezuma's Revenge from a Single Demonstration** – demonstrates that starting episodes from a single human demonstration state enables efficient learning in a sparse‑reward task, illustrating learning from human demonstration as a form of human feedback [arXiv:1812.03381].",2109.07054,"Convergence of a Human-in-the-Loop Policy-Gradient Algorithm With Eligibility Trace Under Reward, Policy, and Advantage Feedback",y

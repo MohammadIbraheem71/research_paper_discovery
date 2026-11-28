@@ -26,6 +26,14 @@ results/*
 !results/uncapped_counts_pivot.csv
 !results/uncapped_totals_by_year.csv
 !results/split_metadata.json
+!results/phase2_retrieval_metrics.csv
+!results/phase2_retrieval_metrics_at_k.csv
+!results/phase2_ablation.csv
+!results/phase2_ablation_questions.csv
+!results/phase2_router_metrics.csv
+!results/phase2_router_confusion.csv
+!results/label_review.md
+!results/label_review_pooled.md
 
 # Python caches, notebook checkpoints, internal tooling, audit artifact
 __pycache__/

@@ -1,0 +1,61 @@
+question,variant,hit@5,rr,llm_calls
+Find papers about low-resource machine translation,with rewrite+grade,1.0,1.0,4
+Find papers about low-resource machine translation,without rewrite+grade,1.0,1.0,0
+Show papers on 3D object detection from 2022 onwards,with rewrite+grade,1.0,1.0,4
+Show papers on 3D object detection from 2022 onwards,without rewrite+grade,1.0,1.0,0
+Which papers discuss graph learning in 2024?,with rewrite+grade,1.0,1.0,4
+Which papers discuss graph learning in 2024?,without rewrite+grade,1.0,0.25,0
+Find papers on diffusion models for image generation,with rewrite+grade,1.0,1.0,4
+Find papers on diffusion models for image generation,without rewrite+grade,1.0,1.0,0
+Show papers about reinforcement learning from human feedback,with rewrite+grade,0.0,0.0,6
+Show papers about reinforcement learning from human feedback,without rewrite+grade,1.0,1.0,0
+Find papers on federated learning and privacy,with rewrite+grade,1.0,1.0,4
+Find papers on federated learning and privacy,without rewrite+grade,1.0,1.0,0
+Show papers about named entity recognition for low-resource languages,with rewrite+grade,1.0,1.0,4
+Show papers about named entity recognition for low-resource languages,without rewrite+grade,1.0,1.0,0
+Find papers on semantic segmentation in images,with rewrite+grade,0.0,0.0,4
+Find papers on semantic segmentation in images,without rewrite+grade,1.0,0.5,0
+Show papers about contrastive learning for representation learning,with rewrite+grade,1.0,1.0,4
+Show papers about contrastive learning for representation learning,without rewrite+grade,1.0,1.0,0
+Find papers on question answering over documents,with rewrite+grade,1.0,1.0,4
+Find papers on question answering over documents,without rewrite+grade,1.0,1.0,0
+Show papers on vision transformers for image classification,with rewrite+grade,1.0,1.0,4
+Show papers on vision transformers for image classification,without rewrite+grade,1.0,1.0,0
+Find papers about knowledge distillation for neural networks,with rewrite+grade,1.0,1.0,4
+Find papers about knowledge distillation for neural networks,without rewrite+grade,1.0,0.5,0
+Show papers on text summarization with transformers,with rewrite+grade,1.0,1.0,4
+Show papers on text summarization with transformers,without rewrite+grade,1.0,1.0,0
+Find papers on object tracking in video,with rewrite+grade,1.0,0.3333333333333333,4
+Find papers on object tracking in video,without rewrite+grade,1.0,1.0,0
+Show papers about adversarial robustness of deep networks,with rewrite+grade,1.0,1.0,4
+Show papers about adversarial robustness of deep networks,without rewrite+grade,1.0,1.0,0
+Find papers on speech recognition and ASR,with rewrite+grade,1.0,1.0,4
+Find papers on speech recognition and ASR,without rewrite+grade,1.0,1.0,0
+Show papers on image super-resolution,with rewrite+grade,1.0,1.0,4
+Show papers on image super-resolution,without rewrite+grade,1.0,1.0,0
+Find papers about graph neural networks for recommendation,with rewrite+grade,0.0,0.0,6
+Find papers about graph neural networks for recommendation,without rewrite+grade,1.0,0.2,0
+Show papers on machine translation evaluation metrics,with rewrite+grade,1.0,1.0,4
+Show papers on machine translation evaluation metrics,without rewrite+grade,1.0,1.0,0
+Find papers on depth estimation from monocular images,with rewrite+grade,1.0,1.0,4
+Find papers on depth estimation from monocular images,without rewrite+grade,1.0,1.0,0
+Show papers about few-shot learning,with rewrite+grade,1.0,1.0,4
+Show papers about few-shot learning,without rewrite+grade,1.0,1.0,0
+Find papers on sentiment analysis of social media,with rewrite+grade,1.0,1.0,4
+Find papers on sentiment analysis of social media,without rewrite+grade,1.0,1.0,0
+Show papers about image captioning with attention,with rewrite+grade,1.0,1.0,4
+Show papers about image captioning with attention,without rewrite+grade,1.0,1.0,0
+Find papers on natural language inference,with rewrite+grade,1.0,1.0,4
+Find papers on natural language inference,without rewrite+grade,1.0,1.0,0
+Show papers about reinforcement learning for robotics,with rewrite+grade,1.0,0.3333333333333333,6
+Show papers about reinforcement learning for robotics,without rewrite+grade,1.0,0.5,0
+Find papers on facial recognition and face verification,with rewrite+grade,1.0,0.5,4
+Find papers on facial recognition and face verification,without rewrite+grade,1.0,1.0,0
+Show papers about document retrieval and ranking,with rewrite+grade,1.0,1.0,4
+Show papers about document retrieval and ranking,without rewrite+grade,1.0,1.0,0
+Find papers on neural architecture search,with rewrite+grade,1.0,1.0,4
+Find papers on neural architecture search,without rewrite+grade,1.0,1.0,0
+Show papers about optical character recognition,with rewrite+grade,1.0,1.0,4
+Show papers about optical character recognition,without rewrite+grade,1.0,1.0,0
+Find papers on dialogue systems and conversational agents,with rewrite+grade,1.0,1.0,4
+Find papers on dialogue systems and conversational agents,without rewrite+grade,1.0,1.0,0

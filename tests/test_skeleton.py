@@ -34,14 +34,22 @@ def test_all_modules_import() -> None:
 
 
 def test_retrieve_returns_doc_shaped_dicts_and_honors_k_and_filters() -> None:
-    docs = rag.retrieve("stub query", k=3, year_min=2021, category="cs.CL", topic=2)
+    # Real FAISS retrieval over data/embeddings.npy: use a real query and a
+    # BERTopic id that is actually assigned inside its top-candidate pool.
+    docs = rag.retrieve(
+        "language models and machine translation",
+        k=3,
+        year_min=2021,
+        category="cs.CL",
+        topic=0,
+    )
     assert isinstance(docs, list) and len(docs) == 3
     expected = set(contracts.Doc.__annotations__)
     for doc in docs:
         assert set(doc) == expected
         assert doc["year"] >= 2021
         assert doc["primary_category"] == "cs.CL"
-        assert doc["bertopic_topic"] == 2
+        assert doc["bertopic_topic"] == 0
 
 
 def test_run_question_reaches_a_valid_answer_on_all_four_routes() -> None:

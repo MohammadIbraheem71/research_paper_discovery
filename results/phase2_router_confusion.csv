@@ -1,0 +1,5 @@
+,literature,trend,hybrid,fallback
+literature,10,0,0,0
+trend,0,10,0,0
+hybrid,0,0,10,0
+fallback,0,0,0,10
